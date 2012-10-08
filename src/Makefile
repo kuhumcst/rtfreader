@@ -1,4 +1,4 @@
-PNAME=cstrtfreader
+PNAME=rtfreader
 VERSION=2
 MINOR_NUMBER=1
 
