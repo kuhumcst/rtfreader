@@ -566,7 +566,7 @@ static int GetPut(const long end_offset,flags & flgs,int f)
             else
                 {
                 if(okToWrite)
-                    PutHandlingLine(ch,flgs);
+                    PutHandlingLine(Uchar(f,ch),flgs);
                 else
                     printf("hide[%c]\n",ch);
                 }
@@ -712,7 +712,6 @@ static int interpretToken(char * tok,const startLine firsttext,int f)
         {
         if(!strncmp/*wcsncmp*/(token,PN->prop,strlen/*wcslen*/(PN->prop)))
             {
-
             char * q = token+strlen/*wcslen*/(PN->prop);
             int FS = 0;
             for(;*q && isDigit(*q);++q)
@@ -1110,11 +1109,15 @@ static bool segment(int level
                                 if(fonttable[ii].f == f)
                                     break;
                                 }
-                            if(ii < 0) // font not found
+                            if(  (ii < 0) // font not found
+                              || (f == 0) // or going to overrule default (ANSI) font
+                              ) 
                                 {
-                                ++lastfont;
+                                if(ii < 0)
+                                    ++lastfont;
                                 MSfont * newfonttable = new MSfont[lastfont + 1];
-                                memcpy(newfonttable+1,fonttable,lastfont * sizeof(MSfont));
+                                if(ii < 0)
+                                    memcpy(newfonttable+1,fonttable,lastfont * sizeof(MSfont));
                                 newfonttable[0].f = f;
                                 size_t j;
                                 for(j = 0;j < sizeof(Codepages)/sizeof(Codepages[0]);++j)
