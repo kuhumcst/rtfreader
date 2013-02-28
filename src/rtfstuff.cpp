@@ -73,6 +73,7 @@ segment[Text]                                                       Recursively 
 #define font 128
 #define fcharset 256
 #define eaten 512
+#define negate 1024
 
 
 /*
@@ -264,7 +265,7 @@ static const char * tokensThatAreField[] = /* strncmp */
   ,NULL
   };
 
-static const char * tokensThatToggle[] = /* strncmp */
+static const char * tokensThatHide[] = /* strncmp */
   {"v" /* hidden text */              // Font (Character) Formatting Properties Toggle
   ,NULL
   };
@@ -506,8 +507,31 @@ static int TranslateToken(const char * token,int f)
     return 0;
     }
 
+static int hidingToken(const char * token)
+    {
+    const char ** p;
+    for(p = tokensThatHide
+        ;*p
+        ;++p
+        )
+        {
+        if(!strcmp(token,*p))
+            {
+            return hidden;
+            }
+        else if(  !strncmp(token,*p,strlen(*p))
+               && !strcmp(token + strlen(*p),"0")
+               )
+            {
+            return (negate | hidden);
+            }
+        }
+    return 0;
+    }
+
 static int GetPut(const long end_offset,flags & flgs,int f)
     {
+    bool okToWrite = true;
     wint_t ch = 0;
     while(Ftell(sourceFile) < end_offset)
         {
@@ -522,6 +546,17 @@ static int GetPut(const long end_offset,flags & flgs,int f)
                     {
                     PutHandlingLine((wint_t)interpretation,flgs);
                     }
+                else
+                    {
+                    int hiding = hidingToken(token+1);
+                    if(hiding)
+                        {
+                        if(hiding & negate)
+                            okToWrite = true;
+                        else
+                            okToWrite = false;
+                        }
+                    }
                 }
             }
         else if(ch != '\n' && ch != '\r')
@@ -530,7 +565,10 @@ static int GetPut(const long end_offset,flags & flgs,int f)
                 --staticEat;
             else
                 {
-                PutHandlingLine(ch,flgs);
+                if(okToWrite)
+                    PutHandlingLine(ch,flgs);
+                else
+                    printf("hide[%c]\n",ch);
                 }
             }
         }
@@ -609,16 +647,12 @@ static int interpretToken(char * tok,const startLine firsttext,int f)
             return field;
             }
         }
-    for(p = tokensThatToggle
-        ;*p
-        ;++p
-        )
-        {
-        if(!strcmp/*wcscmp*/(token,*p))
-            {
-            return hidden; // 
-            }
-        }
+
+
+    int ret = hidingToken(token);
+    if(ret)
+        return ret;
+
     for(p = tokensThatReset
         ;*p
         ;++p
@@ -629,7 +663,7 @@ static int interpretToken(char * tok,const startLine firsttext,int f)
             return reset|new_segment;
             }
         }
-    int ret = TranslateToken(token,f);
+    ret = TranslateToken(token,f);
     if(ret)
         {
         return -ret;
@@ -1157,6 +1191,11 @@ static bool segment(int level
                             i = characterProperty[0].status;
                             b = characterProperty[2].status;
                             scaps = characterProperty[4].status;
+                            }
+                        else if(interpretation & negate)
+                            {
+                            if(interpretation & hidden)
+                                /*local_*/sstatus &= ~hidden;
                             }
                         else
                             {
