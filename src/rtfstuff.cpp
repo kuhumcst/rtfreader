@@ -74,6 +74,7 @@ segment[Text]                                                       Recursively 
 #define fcharset 256
 #define eaten 512
 #define negate 1024
+#define cell 2048
 
 
 /*
@@ -205,6 +206,17 @@ int Uchar(int f,int c)
 
 enum eStatus { uninitialised = -3, notSpecified = -2, mixed = -1, Off = 0, On = 1 };
 
+typedef struct charprops
+    {
+    eStatus i;
+    eStatus b;
+    eStatus scaps;
+    int fs;
+    int f;
+    int uc;
+    } charprops;
+
+
 typedef struct CharToken
   {
   const char * token;
@@ -212,9 +224,8 @@ typedef struct CharToken
   } CharToken;
 
 /* tokens that demarcate segments (can not be part of a segment): */
-static const CharToken tokensThatDemarcateSegments[] =  /* strcmp */
+static const CharToken tokensThatDemarcateSegments[] =
   {{"tab",'\t'}     // Special characters, Symbol
-  ,{"cell",-1}      // Special characters, Symbol
   ,{"par",-1}       // Special characters, Symbol
   ,{"line",-1}      // Special characters, Symbol
   ,{"intbl",-1}//??? Paragraph Formatting Properties
@@ -224,7 +235,12 @@ static const CharToken tokensThatDemarcateSegments[] =  /* strcmp */
   ,{NULL,0}
   };
 
-static const char * tokensThatTakeArgument[] = /* strncmp */
+static const CharToken tokensThatDemarcateSegmentsImmediately[] =
+  {{"cell",-1}      // Special characters, Symbol
+  ,{NULL,0}
+  };
+
+static const char * tokensThatTakeArgument[] =
   {"*"                  // 20090811
   ,"fonttbl"            // Font Table, Destination, part of header
   ,"filetbl"            // File table, Destination, part of header
@@ -266,24 +282,24 @@ static const char * tokensThatTakeArgument[] = /* strncmp */
   ,NULL
   };
 
-static const char * tokensThatAreField[] = /* strncmp */
+static const char * tokensThatAreField[] =
   {"field"          // Fields, Destination
   ,NULL
   };
 
-static const char * tokensThatHide[] = /* strncmp */
+static const char * tokensThatHide[] =
   {"v" /* hidden text */              // Font (Character) Formatting Properties Toggle
   ,NULL
   };
 
-static const char * tokensThatReset[] = /* strncmp */
+static const char * tokensThatReset[] =
   {"pard"           
   ,NULL
   };
 
 /* Tokens that can be part of a segment: */
 
-static const CharToken tokensThatArePartOfTheText[] = /* strcmp */
+static const CharToken tokensThatArePartOfTheText[] =
   {{"lquote",0x91}
   ,{"rquote",0x92}
   ,{"ldblquote",0x93}
@@ -472,7 +488,7 @@ static int TranslateToken(const char * token,int f)
         ;++chartoken
         )
         {
-        if(!strcmp/*wcscmp*/(token,chartoken->token))
+        if(!strcmp(token,chartoken->token))
             {
             if(staticEat > 0)
                 {
@@ -494,18 +510,17 @@ static int TranslateToken(const char * token,int f)
         buf[0] = token[1];
         buf[1] = token[2];
         buf[2] = '\0';
-        int ret = strtol/*wcstol*/(buf,NULL,16);
+        int ret = strtol(buf,NULL,16);
         ret = Uchar(f,ret);
         return ret;
-        //return (wint_t)(unsigned char)(int)/*strtol*/wcstol(buf,NULL,16);
         }
     if(*token == 'u')
         {
         if((token[1] == '-' || ('0' <= token[1] && token[1] <= '9')))
             {
-            int ret = strtol/*wcstol*/(token+1,NULL,10);
+            int ret = strtol(token+1,NULL,10);
             if(ret < 0) //Not necessary, wint_t is unsigned
-              ret += 0x10000;
+                ret += 0x10000;
             staticEat = staticUc;
             return ret;
             }
@@ -573,8 +588,6 @@ static int GetPut(const long end_offset,flags & flgs,int f)
                 {
                 if(okToWrite)
                     PutHandlingLine(Uchar(f,ch),flgs);
-                else
-                    printf("hide[%c]\n",ch);
                 }
             }
         }
@@ -583,7 +596,7 @@ static int GetPut(const long end_offset,flags & flgs,int f)
 
 static int level;
 
-static void resetCharProp(const startLine firsttext)
+static void resetCharProp(const startLine firsttext) // called after \pard
     {
     for(CharProp * P = characterProperty
         ;P->prop
@@ -625,8 +638,8 @@ static int interpretToken(char * tok,const startLine firsttext,int f)
         return eaten;
         }
     ++tok;// skip backslash
-    strcpy/*wcscpy*/(token,tok);
-    size_t end = strlen/*wcslen*/(tok) - 1;
+    strcpy(token,tok);
+    size_t end = strlen(tok) - 1;
     while(tok[end] == (char)' ' || tok[end] == (char)(unsigned char)0xa0 || tok[end] == (char)'\'' || tok[end] == (char)'\n' || tok[end] == (char)'\r')
         token[end--] = '\0';
     for(p = tokensThatTakeArgument
@@ -634,9 +647,9 @@ static int interpretToken(char * tok,const startLine firsttext,int f)
         ;++p
         )
         {
-        if(!strcmp/*wcscmp*/(token,*p))
+        if(!strcmp(token,*p))
             {
-            if(!strcmp/*wcscmp*/("fonttbl",*p))
+            if(!strcmp("fonttbl",*p))
                 {
                 return skip_tekst|fonttbl;
                 }
@@ -648,7 +661,7 @@ static int interpretToken(char * tok,const startLine firsttext,int f)
         ;++p
         )
         {
-        if(!strcmp/*wcscmp*/(token,*p))
+        if(!strcmp(token,*p))
             {
             return field;
             }
@@ -664,7 +677,7 @@ static int interpretToken(char * tok,const startLine firsttext,int f)
         ;++p
         )
         {
-        if(!strcmp/*wcscmp*/(token,*p))
+        if(!strcmp(token,*p))
             {
             return reset|new_segment;
             }
@@ -680,18 +693,30 @@ static int interpretToken(char * tok,const startLine firsttext,int f)
         ;++chartoken
         )
         {
-        if(!strcmp/*wcscmp*/(token,chartoken->token))
+        if(!strcmp(token,chartoken->token))
             {
             return new_segment;
             }
         }
-    
+
+    for(chartoken = tokensThatDemarcateSegmentsImmediately
+        ;chartoken->token
+        ;++chartoken
+        )
+        {
+        if(!strcmp(token,chartoken->token))
+            {
+            return cell;
+            }
+        }
+
+
     for(CharProp * P = characterProperty
         ;P->prop
         ;++P
         )
         {
-        if(!strcmp/*wcscmp*/(token,P->prop))
+        if(!strcmp(token,P->prop))
             {
             if(P->onn)
                 {
@@ -716,14 +741,12 @@ static int interpretToken(char * tok,const startLine firsttext,int f)
         ;++PN
         )
         {
-        if(!strncmp/*wcsncmp*/(token,PN->prop,strlen/*wcslen*/(PN->prop)))
+        if(!strncmp(token,PN->prop,strlen(PN->prop)))
             {
-            char * q = token+strlen/*wcslen*/(PN->prop);
+            char * q = token+strlen(PN->prop);
             int FS = 0;
             for(;*q && isDigit(*q);++q)
                 FS = 10*FS + (*q - '0');
-            /*if(!wcsncmp(token,"uc",wcslen("uc")))
-                printf("uc!");*/
             if(!*q)
                 {
                 if(PN->N == NotSpecified || firsttext.EOL)
@@ -737,7 +760,25 @@ static int interpretToken(char * tok,const startLine firsttext,int f)
     return 0;
     }
 
-static long doTheSegmentation(eStatus i, eStatus b, eStatus scaps, int fs,int f,bool nl,bool &oldnl,const long end_offset,const long begin_offset,flags & flgs,bool & WritePar,long & targetFilePos)
+/*
+static void logfromto(const long begin_offset,const long end_offset)
+    {
+    long cur = Ftell(sourceFile);
+    Fseek(sourceFile,begin_offset,_SEEK_SET);
+    long P;
+    printf("%ld - %ld ^%ld: ",begin_offset,end_offset,cur);
+    while((P = Ftell(sourceFile)) < end_offset)
+        {
+        if(P == cur)
+            printf("^");
+        putchar(Getc(sourceFile));
+        }
+    putchar('\n');
+    Fseek(sourceFile,cur,_SEEK_SET);
+    }
+*/
+
+static long doTheSegmentation(charprops CharProps,bool nl,bool &oldnl,const long end_offset,const long begin_offset,flags & flgs,bool & WriteParAfterField,long & targetFilePos,bool forceEndOfSegmentAfter)
     {
     if(-1L < begin_offset && begin_offset < end_offset)
         {
@@ -749,17 +790,10 @@ static long doTheSegmentation(eStatus i, eStatus b, eStatus scaps, int fs,int f,
 #endif
 //        flgs.newSegment = true; // Signal to Put3 to let it handle sentence-ending abbreviations
         long cur = Ftell(sourceFile);
-        
-        static int oldfs = Uninitialised;
-        static int oldf = Uninitialised;
-        static eStatus oldi = uninitialised;
-        static eStatus oldb = uninitialised;
-        static eStatus oldscaps = uninitialised;
-//        static bool myoldnl = 0;
-        bool writepar = false;
+//        logfromto(begin_offset,end_offset);
+        static charprops old = {uninitialised,uninitialised,uninitialised,Uninitialised,Uninitialised,Uninitialised};
+        bool writeparAfterCharacterPropertyChange = false;
         int ch = 0;
-//        if(!oldnl)
-  //          oldnl = myoldnl;
         if(oldnl)
             {
             if(Option.emptyline)
@@ -767,51 +801,46 @@ static long doTheSegmentation(eStatus i, eStatus b, eStatus scaps, int fs,int f,
             PutHandlingLine('\n',flgs);
             }
         Fseek(sourceFile,begin_offset,_SEEK_SET);
-/*        char temp[256];
-        sprintf(temp,"{fs %d -> %d}",oldfs,fs);
-        logn(temp);*/
-        if(oldfs != fs)
+        if(oldnl)
             {
-            if(oldfs != Uninitialised && fs != Mixed)
+            if(old.fs != CharProps.fs)
                 {
-                writepar = true;
+                if(old.fs != Uninitialised && CharProps.fs != Mixed)
+                    {
+                    writeparAfterCharacterPropertyChange = true;
+                    }
                 }
-            oldfs = fs;
+            if(old.f != CharProps.f)
+                {
+                if(old.f != Uninitialised && CharProps.f != Mixed)
+                    {
+                    writeparAfterCharacterPropertyChange = true;
+                    }
+                }
+            if(old.i != CharProps.i)
+                {
+                if(old.i != uninitialised && CharProps.i != mixed)
+                    {
+                    writeparAfterCharacterPropertyChange = true;
+                    }
+                }
+            if(old.b != CharProps.b)
+                {
+                if(old.b != uninitialised && CharProps.b != mixed)
+                    {
+                    writeparAfterCharacterPropertyChange = true;
+                    }
+                }
+            if(old.scaps != CharProps.scaps)
+                {
+                if(old.scaps != uninitialised && CharProps.scaps != mixed)
+                    {
+                    writeparAfterCharacterPropertyChange = true;
+                    }
+                }
             }
-            /* Font changes can happen in the middle of a word */
-        if(oldnl && oldf != f)
-            {
-            if(oldf != Uninitialised && f != Mixed)
-                {
-                writepar = true;
-                }
-            oldf = f;
-            }/**/
-        if(oldi != i)
-            {
-            if(oldi != uninitialised && i != mixed)
-                {
-                writepar = true;
-                }
-            oldi = i;
-            }
-        if(oldb != b)
-            {
-            if(oldb != uninitialised && b != mixed)
-                {
-                writepar = true;
-                }
-            oldb = b;
-            }
-        if(oldscaps != scaps)
-            {
-            if(oldscaps != uninitialised && scaps != mixed)
-                {
-                writepar = true;
-                }
-            oldscaps = scaps;
-            }
-        if(writepar || WritePar)
+        old = CharProps;
+        if(writeparAfterCharacterPropertyChange || WriteParAfterField)
             {
             if(oldnl)
                 {
@@ -822,10 +851,8 @@ static long doTheSegmentation(eStatus i, eStatus b, eStatus scaps, int fs,int f,
                 PutHandlingLine('\n',flgs);
                 PutHandlingLine('\n',flgs);
                 }
-//            writepar = false;
-            WritePar = false;
+            WriteParAfterField = false;
             }
-//        myoldnl = nl;
         static int nbullets = 0;
         if(flgs.bbullet)
             {
@@ -838,7 +865,7 @@ static long doTheSegmentation(eStatus i, eStatus b, eStatus scaps, int fs,int f,
                         PutHandlingLine('\n',flgs);
                         PutHandlingLine('\n',flgs);
                         }
-                    ch = GetPut(end_offset,flgs,f);
+                    ch = GetPut(end_offset,flgs,CharProps.f);
                     if(Option.emptyline)
                         {
                         PutHandlingLine('\n',flgs);
@@ -854,7 +881,7 @@ static long doTheSegmentation(eStatus i, eStatus b, eStatus scaps, int fs,int f,
                 else
                     {
                     nbullets = 0;
-                    ch = GetPut(end_offset,flgs,f);
+                    ch = GetPut(end_offset,flgs,CharProps.f);
                     }
                 }
             else if(Option.bullet)
@@ -910,9 +937,14 @@ static long doTheSegmentation(eStatus i, eStatus b, eStatus scaps, int fs,int f,
         else
             {
             nbullets = 0;
-            ch = GetPut(end_offset,flgs,f);
+            ch = GetPut(end_offset,flgs,CharProps.f);
             }
-        if(nl)
+        if(forceEndOfSegmentAfter)
+            {
+                        PutHandlingLine('\n',flgs);
+                        PutHandlingLine('\n',flgs);
+            }
+        else if(nl)
             {
             PutHandlingLine('\n',flgs);
             }
@@ -974,7 +1006,7 @@ static wint_t lookaheadRTF(STROEM * fp,const startLine firsttext,int f)
     return next;
     }
 
-static void segmentdefault(int ch,int sstatus,eStatus i,eStatus b,eStatus scaps,int fs,int f,long & end_offset,long & begin_offset,lookahead_fnc lookahead,startLine & firsttext,/*bool & in_fileName,*/const long curr_pos,flags & flgs,bool & WritePar,long & targetFilePos,bool & oldnl)
+static void segmentdefault(int ch,int sstatus,charprops CharProps,long & end_offset,long & begin_offset,lookahead_fnc lookahead,startLine & firsttext,const long curr_pos,flags & flgs,bool & WriteParAfterField,long & targetFilePos,bool & oldnl)
     {
     if(sstatus & fonttbl)
         {
@@ -991,7 +1023,7 @@ static void segmentdefault(int ch,int sstatus,eStatus i,eStatus b,eStatus scaps,
           || (end_offset - begin_offset > MAXSEGMENTLENGTH && isSpace(ch)) // check for buffer overflow
           )
             {
-            begin_offset = doTheSegmentation(i,b,scaps,fs,f,false,oldnl,end_offset,begin_offset,flgs,WritePar,targetFilePos);
+            begin_offset = doTheSegmentation(CharProps,false,oldnl,end_offset,begin_offset,flgs,WriteParAfterField,targetFilePos,false);
             firsttext.b.SD = 1;
             }
         if(!isSpace(ch))
@@ -1001,23 +1033,23 @@ static void segmentdefault(int ch,int sstatus,eStatus i,eStatus b,eStatus scaps,
         }
     }
 
+/*
+ *  segment() returns 'true' if \field is encountered, otherwise false.
+ *  A \field can trigger a paragraph ending in the next block.
+ */
 static bool segment(int level
                     ,int sstatus
-                    ,bool PrevIsField
-                    ,eStatus i
-                    ,eStatus b
-                    ,eStatus scaps
-                    ,int fs
-                    ,int f
-                    ,int uc
+                    ,bool PrevIsField  // True if previous sibling block contains a \field
+                    ,charprops CharProps
                     ,long & begin_offset
                     ,flags & flgs
                     )
     {
     static long end_offset = 0;
     static startLine firsttext = {{1,0,0,1}};  // Turned on by start of segment (rtf). Turned off in all other cases.
-    //static bool in_fileName = false;
-    static bool WritePar = false;
+    static bool WriteParAfterField = false; // Set to true if a block 
+        // containing \field is followed by another block (as a sibling).
+        // Set to false when paragraph delimiter is written to output.
     static long targetFilePos = 0L;
     static bool oldnl = false;
 
@@ -1025,14 +1057,6 @@ static bool segment(int level
 
     ::level = level;
     wint_t ch; // 20090528 int --> wint_t
-    //    int local_status = 0;
-    /*
-    eStatus i = notSpecified;
-    eStatus b = notSpecified;
-    eStatus scaps = notSpecified;
-    int fs = NotSpecified;
-    int f = NotSpecified;
-    */
     curr_pos = Ftell(sourceFile);
     bool prevIsField = false;
     bool isField = false;
@@ -1049,10 +1073,10 @@ static bool segment(int level
                 if(sstatus & (skip_tekst|hidden))
                     log(0,'@',false);
 #endif
-                prevIsField = segment(level+1,/*local_status |*/ sstatus,prevIsField,i,b,scaps,fs,f,uc,begin_offset,flgs);
-                flgs.f = f;
-                flgs.uc = uc;
-                staticUc = uc; // reset
+                prevIsField = segment(level+1,sstatus,prevIsField,CharProps,begin_offset,flgs);
+                flgs.f = CharProps.f;
+                flgs.uc = CharProps.uc;
+                staticUc = CharProps.uc; // reset
                 staticEat = 0; // reset
 
 #ifdef LOGGING
@@ -1066,7 +1090,7 @@ static bool segment(int level
                 {
                 flgs.in_fileName = false;
                 firsttext.b.SD = 1;
-                begin_offset = doTheSegmentation(i,b,scaps,fs,f,false,oldnl,end_offset,begin_offset,flgs,WritePar,targetFilePos);
+                begin_offset = doTheSegmentation(CharProps,false,oldnl,end_offset,begin_offset,flgs,WriteParAfterField,targetFilePos,false);
                 return isField;
                 }
             case '\\':
@@ -1074,7 +1098,7 @@ static bool segment(int level
 #ifdef LOGGING
                 log(level,ch,false);
 #endif
-                char * token = parseRTFtoken(level/*,*//*local_status | *//*sstatus*/);
+                char * token = parseRTFtoken(level);
                 if(token)
                     {
 #ifdef LOGGING
@@ -1082,23 +1106,23 @@ static bool segment(int level
                     sprintf(temp,"A fs %d",fs);
                     logn(temp);
 #endif
-                    characterProperty[0].status = i;
-                    characterProperty[2].status = b;
-                    characterProperty[4].status = scaps;
-                    characterPropertyWithNumericalParameter[0].N = fs;
-                    characterPropertyWithNumericalParameter[1].N = f;
-                    characterPropertyWithNumericalParameter[3].N = uc;
-                    int interpretation = interpretToken(token,firsttext,f);
+                    characterProperty[0].status = CharProps.i;
+                    characterProperty[2].status = CharProps.b;
+                    characterProperty[4].status = CharProps.scaps;
+                    characterPropertyWithNumericalParameter[0].N = CharProps.fs;
+                    characterPropertyWithNumericalParameter[1].N = CharProps.f;
+                    characterPropertyWithNumericalParameter[3].N = CharProps.uc;
+                    int interpretation = interpretToken(token,firsttext,CharProps.f);
                     if(interpretation == eaten)
                         break;
-                    fs = characterPropertyWithNumericalParameter[0].N;
-                    f = characterPropertyWithNumericalParameter[1].N;
-                    uc = characterPropertyWithNumericalParameter[3].N;
-                    flgs.uc = uc;
-                    staticUc = uc;
-                    i = characterProperty[0].status;
-                    b = characterProperty[2].status;
-                    scaps = characterProperty[4].status;
+                    CharProps.fs = characterPropertyWithNumericalParameter[0].N;
+                    CharProps.f = characterPropertyWithNumericalParameter[1].N;
+                    CharProps.uc = characterPropertyWithNumericalParameter[3].N;
+                    flgs.uc = CharProps.uc;
+                    staticUc = CharProps.uc;
+                    CharProps.i = characterProperty[0].status;
+                    CharProps.b = characterProperty[2].status;
+                    CharProps.scaps = characterProperty[4].status;
 #ifdef LOGGING
                     sprintf(temp,"B fs %d",fs);
                     logn(temp);
@@ -1107,16 +1131,16 @@ static bool segment(int level
                         {
                         fcharsetProp = characterPropertyWithNumericalParameter[2].N;
 
-                        if(f >= 0 && fcharsetProp >= 0)
+                        if(CharProps.f >= 0 && fcharsetProp >= 0)
                             {
                             int ii;
                             for(ii = lastfont;ii >= 0;--ii)
                                 {
-                                if(fonttable[ii].f == f)
+                                if(fonttable[ii].f == CharProps.f)
                                     break;
                                 }
                             if(  (ii < 0) // font not found
-                              || (f == 0) // or going to overrule default (ANSI) font
+                              || (CharProps.f == 0) // or going to overrule default (ANSI) font
                               ) 
                                 {
                                 if(ii < 0)
@@ -1124,7 +1148,7 @@ static bool segment(int level
                                 MSfont * newfonttable = new MSfont[lastfont + 1];
                                 if(ii < 0)
                                     memcpy(newfonttable+1,fonttable,lastfont * sizeof(MSfont));
-                                newfonttable[0].f = f;
+                                newfonttable[0].f = CharProps.f;
                                 size_t j;
                                 for(j = 0;j < sizeof(Codepages)/sizeof(Codepages[0]);++j)
                                     {
@@ -1146,8 +1170,8 @@ static bool segment(int level
                         }
                     else if(interpretation < 0) // just a character (sign inverted)
                         {
-                        staticUc = uc;
-                        segmentdefault(-interpretation,(/*local_status|*/sstatus),i,b,scaps,fs,f,end_offset,begin_offset,lookaheadRTF,firsttext,/*in_fileName,*/curr_pos,flgs,WritePar,targetFilePos,oldnl);
+                        staticUc = CharProps.uc;
+                        segmentdefault(-interpretation,sstatus,CharProps,end_offset,begin_offset,lookaheadRTF,firsttext,curr_pos,flgs,WriteParAfterField,targetFilePos,oldnl);
                         }
                     else
                         {
@@ -1158,15 +1182,31 @@ static bool segment(int level
                             log(0,'#',false);
 #endif
                             interpretation = new_segment;
-                            WritePar = true;
+                            WriteParAfterField = true;
                             }
 
                         if(interpretation == field)
                             {
                             isField = true;
                             }
-                        else if(interpretation == new_segment)
+                        else if(interpretation & new_segment) // 20130301 == -> &
                             {
+                            if(interpretation & reset) // \pard
+                                {
+                                sstatus &= ~hidden;
+                                characterProperty[0].status = CharProps.i;
+                                characterProperty[2].status = CharProps.b;
+                                characterProperty[4].status = CharProps.scaps;
+                                characterPropertyWithNumericalParameter[0].N = CharProps.fs;
+                                characterPropertyWithNumericalParameter[1].N = CharProps.f;
+                                flgs.f = CharProps.f;
+                                resetCharProp(firsttext);
+                                CharProps.fs = characterPropertyWithNumericalParameter[0].N;
+                                CharProps.f = characterPropertyWithNumericalParameter[1].N;
+                                CharProps.i = characterProperty[0].status;
+                                CharProps.b = characterProperty[2].status;
+                                CharProps.scaps = characterProperty[4].status;
+                                }
                             if(begin_offset < 0)
                                 {
                                 oldnl = true; // found \par between segments, eg
@@ -1175,40 +1215,48 @@ static bool segment(int level
                                 }
                             else
                                 {
-                                begin_offset = doTheSegmentation(i,b,scaps,fs,f,true,oldnl,end_offset,begin_offset,flgs,WritePar,targetFilePos);
+                                begin_offset = doTheSegmentation(CharProps,true,oldnl,end_offset,begin_offset,flgs,WriteParAfterField,targetFilePos,false);
                                 }
                             firsttext.b.SD = 1;
-                            //                            firsttext.b.WS = 1;
                             firsttext.b.LS = 1;
                             }
-                        else if(interpretation & reset)
+                        else if(interpretation & cell)
                             {
-                            /*local_*/sstatus &= ~hidden;
-                            characterProperty[0].status = i;
-                            characterProperty[2].status = b;
-                            characterProperty[4].status = scaps;
-                            characterPropertyWithNumericalParameter[0].N = fs;
-                            characterPropertyWithNumericalParameter[1].N = f;
-                            //characterPropertyWithNumericalParameter[3].N = uc;
-                            flgs.f = f;
-                            //flgs.uc = uc;
+                            if(begin_offset < 0)
+                                {
+                                oldnl = true;
+                                }
+                            else
+                                {
+                                begin_offset = doTheSegmentation(CharProps,true,oldnl,end_offset,begin_offset,flgs,WriteParAfterField,targetFilePos,true);
+                                }
+                            firsttext.b.SD = 1;
+                            firsttext.b.LS = 1;
+                            }
+                        else if(interpretation & reset) // \pard
+                            {
+                            sstatus &= ~hidden;
+                            characterProperty[0].status = CharProps.i;
+                            characterProperty[2].status = CharProps.b;
+                            characterProperty[4].status = CharProps.scaps;
+                            characterPropertyWithNumericalParameter[0].N = CharProps.fs;
+                            characterPropertyWithNumericalParameter[1].N = CharProps.f;
+                            flgs.f = CharProps.f;
                             resetCharProp(firsttext);
-                            fs = characterPropertyWithNumericalParameter[0].N;
-                            f = characterPropertyWithNumericalParameter[1].N;
-                            //uc = characterPropertyWithNumericalParameter[3].N;
-                            //flgs.uc = uc;
-                            i = characterProperty[0].status;
-                            b = characterProperty[2].status;
-                            scaps = characterProperty[4].status;
+                            CharProps.fs = characterPropertyWithNumericalParameter[0].N;
+                            CharProps.f = characterPropertyWithNumericalParameter[1].N;
+                            CharProps.i = characterProperty[0].status;
+                            CharProps.b = characterProperty[2].status;
+                            CharProps.scaps = characterProperty[4].status;
                             }
                         else if(interpretation & negate)
                             {
                             if(interpretation & hidden)
-                                /*local_*/sstatus &= ~hidden;
+                                sstatus &= ~hidden;
                             }
                         else
                             {
-                            /*local_*/sstatus |= interpretation;
+                            sstatus |= interpretation;
                             }
                         }
                     }
@@ -1219,7 +1267,7 @@ static bool segment(int level
 #ifdef LOGGING
                 log(level,ch,false);
 #endif
-                segmentdefault(ch,(/*local_status|*/sstatus),i,b,scaps,fs,f,end_offset,begin_offset,lookaheadRTF,firsttext,/*in_fileName,*/curr_pos,flgs,WritePar,targetFilePos,oldnl);
+                segmentdefault(ch,sstatus,CharProps,end_offset,begin_offset,lookaheadRTF,firsttext,curr_pos,flgs,WriteParAfterField,targetFilePos,oldnl);
                 }
             }
         curr_pos = Ftell(sourceFile);
@@ -1243,15 +1291,11 @@ bool RTFSegmentation(STROEM * sourceFile,STROEM * targetFile)
     fonttable[lastfont].f = 0;
     fonttable[lastfont].pos = Codepages[0].pos;
     flags flgs;
-    eStatus i = notSpecified;
-    eStatus b = notSpecified;
-    eStatus scaps = notSpecified;
-    int fs = NotSpecified;
-    int f = NotSpecified;
-    int uc = NotSpecified;
+    charprops CharProps = {notSpecified,notSpecified,notSpecified,NotSpecified,NotSpecified,NotSpecified};
+
     long begin_offset = 0;
 
-    segment(0,0,false,i,b,scaps,fs,f,uc,begin_offset,flgs);
+    segment(0,0,false,CharProps,begin_offset,flgs);
     Put2(0,flgs);
     Put2(0,flgs);
     return closeStreams();
