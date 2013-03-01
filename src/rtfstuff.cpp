@@ -225,35 +225,41 @@ static const CharToken tokensThatDemarcateSegments[] =  /* strcmp */
   };
 
 static const char * tokensThatTakeArgument[] = /* strncmp */
-  {"*"              // 20090811
-  ,"fonttbl"        // Font Table, Destination
-  ,"stylesheet"     // Style Sheet, Destination
-  ,"pntext"         // Bullets and numbering,  Destination
-  ,"pict"           // Pictures, Destination
-  ,"object"         // Objects, Destination
-  ,"template"       // Document Formatting Properties, Destination
-  ,"author"         // Information Group, Destination
-  ,"bkmkstart"      // Bookmarks, Destination
-  ,"bkmkend"        // Bookmarks, Destination
-  ,"title"          // Information Group, Destination
-  ,"fldinst"        // Fields, Destination
-  ,"operator"       // Information Group, Destination
-  ,"xe"             // Index Entries, Destination
+  {"*"                  // 20090811
+  ,"fonttbl"            // Font Table, Destination, part of header
+  ,"filetbl"            // File table, Destination, part of header
+  ,"colortbl"           // Color table, Destination, part of header
+  ,"stylesheet"         // Style Sheet, Destination
+  ,"stylerestrictions"  // Style restrictions group , part of header
+  ,"listtables"         // List tables, part of header (mentioned, but not documented in RTF-doc)
+  ,"listtable"          // List table, Destination, part of header
+  ,"listoverridetable"  // List Override table, Destination, part of header
+  ,"revtbl"             // Track changes, Destination, part of header
+  ,"rsidtable"          // Revision Save ID table, part of header
+  ,"mathprops"          // math properties group, part of header
+  ,"generator"          // Generator area, Destination, part of header
+  ,"pntext"             // Bullets and numbering,  Destination
+  ,"pict"               // Pictures, Destination
+  ,"object"             // Objects, Destination
+  ,"template"           // Document Formatting Properties, Destination
+  ,"author"             // Information Group, Destination
+  ,"bkmkstart"          // Bookmarks, Destination
+  ,"bkmkend"            // Bookmarks, Destination
+  ,"title"              // Information Group, Destination
+  ,"fldinst"            // Fields, Destination
+  ,"operator"           // Information Group, Destination
+  ,"xe"                 // Index Entries, Destination
 //  ,"field"          // Fields, Destination
-  ,"fldinst"          // Fields, Destination
-  ,"viewkind"   // Document Format Properties, Value
-  ,"viewscale"  // Document Format Properties, Value
-  ,"viewzk"     // Document Format Properties, Value
-  ,"company"        // Information Group, Destination
-  ,"pntxta"         // Bullets and numbering, Destination
-  ,"pntxtb"         // Bullets and numbering, Destination
-  ,"revtbl"         // Track changes, Destination
-  ,"background"     // Word 97 through Word 2002 RTF for Drawing Objects (Shapes), Destination
-  ,"userprops"      // Information Group, Destination
-  ,"listtable"
-  ,"listoverridetable"
+  ,"fldinst"            // Fields, Destination
+  ,"viewkind"           // Document Format Properties, Value
+  ,"viewscale"          // Document Format Properties, Value
+  ,"viewzk"             // Document Format Properties, Value
+  ,"company"            // Information Group, Destination
+  ,"pntxta"             // Bullets and numbering, Destination
+  ,"pntxtb"             // Bullets and numbering, Destination
+  ,"background"         // Word 97 through Word 2002 RTF for Drawing Objects (Shapes), Destination
+  ,"userprops"          // Information Group, Destination
   ,"shp"
-  ,"generator"
   ,"password"
   ,"xmlnstbl"
   ,"wgrffmtfilter"
