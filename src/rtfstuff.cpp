@@ -478,10 +478,16 @@ static char * parseRTFtoken(int level/*,int stat*/)
 
 static int staticEat = 0;
 static int staticUc; // number of characters to "eat" after a \uNNNNN character has been read. (indicated by \ucN)
+//Any RTF control word or symbol is considered a single character for the purposes of counting skippable characters.
 
 static int TranslateToken(const char * token,int f)
 // Can return < 0 !
     {
+    if(staticEat > 0)
+        {
+        --staticEat;
+        return 0;
+        }
     const CharToken * chartoken;
     for(chartoken = tokensThatArePartOfTheText
         ;chartoken->token
@@ -490,22 +496,26 @@ static int TranslateToken(const char * token,int f)
         {
         if(!strcmp(token,chartoken->token))
             {
+            /*
             if(staticEat > 0)
                 {
                 --staticEat;
                 return 0;
                 }
+            */
             return chartoken->ISOcode;
             }
         }
 
     if(*token == '\'')
         {
+        /*
         if(staticEat > 0)
             {
             --staticEat;
             return 0;
             }
+        */
         char buf[3];
         buf[0] = token[1];
         buf[1] = token[2];
@@ -554,6 +564,7 @@ static int GetPut(const long end_offset,flags & flgs,int f)
     {
     bool okToWrite = true;
     wint_t ch = 0;
+    long bo = Ftell(sourceFile);//debug
     while(Ftell(sourceFile) < end_offset)
         {
         ch = Getc(sourceFile);
@@ -632,7 +643,7 @@ static int interpretToken(char * tok,const startLine firsttext,int f)
         {
         return -(int)(unsigned char)*tok;
         }
-    if(staticEat > 0 && tok[1] == '\'')
+    if(staticEat > 0)// && tok[1] == '\'')
         {
         --staticEat;
         return eaten;
@@ -790,6 +801,7 @@ static long doTheSegmentation(charprops CharProps,bool nl,bool &oldnl,const long
 #endif
 //        flgs.newSegment = true; // Signal to Put3 to let it handle sentence-ending abbreviations
         long cur = Ftell(sourceFile);
+        int alreadyEaten = staticEat;
 //        logfromto(begin_offset,end_offset);
         static charprops old = {uninitialised,uninitialised,uninitialised,Uninitialised,Uninitialised,Uninitialised};
         bool writeparAfterCharacterPropertyChange = false;
@@ -941,8 +953,8 @@ static long doTheSegmentation(charprops CharProps,bool nl,bool &oldnl,const long
             }
         if(forceEndOfSegmentAfter)
             {
-                        PutHandlingLine('\n',flgs);
-                        PutHandlingLine('\n',flgs);
+            PutHandlingLine('\n',flgs);
+            PutHandlingLine('\n',flgs);
             }
         else if(nl)
             {
@@ -969,6 +981,7 @@ static long doTheSegmentation(charprops CharProps,bool nl,bool &oldnl,const long
             }
         targetFilePos = end_offset;
         Fseek(sourceFile,cur,_SEEK_SET);
+        staticEat = alreadyEaten;
         oldnl = false;
         flgs.bbullet = false;
         return -1;//begin_offset
@@ -1267,7 +1280,10 @@ static bool segment(int level
 #ifdef LOGGING
                 log(level,ch,false);
 #endif
-                segmentdefault(ch,sstatus,CharProps,end_offset,begin_offset,lookaheadRTF,firsttext,curr_pos,flgs,WriteParAfterField,targetFilePos,oldnl);
+                if(staticEat > 0)
+                    --staticEat;
+                else
+                    segmentdefault(ch,sstatus,CharProps,end_offset,begin_offset,lookaheadRTF,firsttext,curr_pos,flgs,WriteParAfterField,targetFilePos,oldnl);
                 }
             }
         curr_pos = Ftell(sourceFile);
