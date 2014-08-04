@@ -995,8 +995,10 @@ const bool vowels[256] =
 
 #if COLONISSENTENCEDELIMITER
 #define isPunct(s) (s == ';' || s == '?' || s == '.' || s == '!' || s == ':')
+#define isSemiPunct(s) (s == ',')
 #else
 #define isPunct(s) (s == ';' || s == '?' || s == '.' || s == '!')
+#define isSemiPunct(s) (s == ',' || s == ':')
 #endif
 
 void hyphenate(wchar_t * lastWord,int waited,flags & flgs)
@@ -1033,7 +1035,7 @@ static void considerHyphenation(wchar_t * lastWord,int waited,bool dropHyphen,bo
             {
             if(punkpos < 0 && isPunct(k))
                 punkpos = cnt;
-            else
+            else if(!isSemiPunct(k))
                 nonAlphaFound = true;
             break;
             }
