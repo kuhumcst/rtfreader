@@ -554,6 +554,10 @@ void updateFlags(wint_t ch,flags & flgs)
 
 bool TextSegmentation(STROEM * sourceFile,STROEM * targetFile)
     {
+    if(Option.parseAsXml)
+        parseAsXml();
+    if(Option.parseAsHtml)
+        parseAsHtml();
     ::sourceFile = sourceFile;
     ::outputtext = targetFile;
     flags flgs;

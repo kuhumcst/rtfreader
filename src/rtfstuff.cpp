@@ -564,7 +564,7 @@ static int GetPut(const long end_offset,flags & flgs,int f)
     {
     bool okToWrite = true;
     wint_t ch = 0;
-    long bo = Ftell(sourceFile);//debug
+//    long bo = Ftell(sourceFile);//debug
     while(Ftell(sourceFile) < end_offset)
         {
         ch = Getc(sourceFile);

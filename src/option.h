@@ -64,6 +64,49 @@ struct optionStruct
     bool keepEOLsequence;     // -r              Use same EOL-sequence as input, i.e. if input is DOS, output is DOS, etc.
                               //                 Assume DOS (CR LF \r\n) if no EOL-sequence present in input.
                               // -r-             Use newline (\n) as EOL-sequence (default).
+    bool parseAsXml;          // processor instruction ends with ?> Otherwise, they end with > (SGML, HTML)
+    bool parseAsHtml;         // script and style elements take CDATA, but only if parseAsXml is false! (So no XHTML)
+                              // If parseAsXml is true, parseAsHtml is irrelevant
+/*
+Input:
+aap <?php >? ?> noot. <script  class=". "> <p class="! "> sætning. </ p > </script>.
+
+parseAsXml == false
+parseAsHtml == false
+
+aap <?php > ?
+?
+> noot .
+ <script class=". "> <p class="! "> sætning .
+ </ p > </script> .
+
+parseAsXml == true
+parseAsHtml == false
+
+aap <?php >? ?> noot .
+ <script class=". "> <p class="! "> sætning .
+ </ p > </script> .
+
+parseAsXml == false
+parseAsHtml == true
+
+aap <?php > ?
+?
+> noot .
+ <script class=". "> <p class= " !
+" > sætning .
+ </ p > </script> .
+
+parseAsXml == true
+parseAsHtml == true
+
+aap <?php >? ?> noot .
+ <script class=". "> <p class="! "> sætning .
+ </ p > </script> .
+
+
+*/
+
     encodingType encoding;    // -E UTF8 -E UTF16 or -E ISO
     optionStruct()
         {
@@ -86,6 +129,8 @@ struct optionStruct
         suppressNoise = false;
         wordUnwrap = false;
         keepEOLsequence = false;
+        parseAsXml = false;          // processor instruction ends with ?> Otherwise, they end with > (SGML, HTML)
+        parseAsHtml = false;         // script and style elements take CDATA, but only if parseAsXml is false! (So no XHTML)
         encoding = eNoconversion;
         }
     };

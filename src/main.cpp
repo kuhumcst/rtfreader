@@ -21,7 +21,7 @@ along with CSTRTFREADER; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#define VERSION "1.2"
+#define VERSION "1.3"
 
 
 #include "data.h"
@@ -38,7 +38,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include <stdlib.h>
 #include <string.h>
 
-static const char opts[] = "?@:A:a:b:B:e:E:hH:i:m:n:P:r:s:t:T:vw:x:";
+static const char opts[] = "?@:A:a:b:B:e:E:hH:i:m:n:P:r:s:t:T:vw:x:X:";
 
 
 static void doSwitch(int c,char * locoptarg,char * progname,optionStruct & Option)
@@ -64,7 +64,14 @@ static void doSwitch(int c,char * locoptarg,char * progname,optionStruct & Optio
             Option.argt= locoptarg;
             break;
         case 'H':
-            Option.suppressHTML = locoptarg && *locoptarg == '-';
+            if(!strcmp(locoptarg,"TML"))
+                Option.parseAsHtml = true;
+            else
+                Option.suppressHTML = locoptarg && *locoptarg == '-';
+            break;
+        case 'X':
+            if(!strcmp(locoptarg,"ML"))
+                Option.parseAsXml = true;
             break;
         case 'n':
             Option.suppressNoise = locoptarg && *locoptarg == '-';
@@ -93,6 +100,7 @@ static void doSwitch(int c,char * locoptarg,char * progname,optionStruct & Optio
             printf("    -e-             Do not output empty lines. (default)\n");
             printf("    -H              Keep html-tags (As tokens, if -T or -P is specified.) (Flat text input only). (default)\n");
             printf("    -H-             Suppress html-tags from output. (Flat text input only).\n");
+            printf("    -HTML           Parse as HTML: <style> and <script> take CDATA, but only if not -XML (default off).\n");
             printf("    -h              Usage.\n");
             printf("    -m<mwu>         Text file with multi-word-units\n");
             printf("    -n              Keep noise. (default)\n");
@@ -111,6 +119,7 @@ static void doSwitch(int c,char * locoptarg,char * progname,optionStruct & Optio
             printf("    -x              Input is plain text.\n");
             printf("    -x-             Input is RTF.\n");
             printf("    -x+             Input is RTF or plain text. Let the program find out. (default)\n");
+            printf("    -XML            Parse as XML: processor instructions end with ?> (default off).\n");
             printf("    -E<encoding>    Force output encoding: UTF8, ISO or UTF16 (default: same encoding as input if text, UTF8 if RTF)\n");
             exit(0);
             break;
