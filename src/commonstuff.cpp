@@ -377,7 +377,7 @@ static void PutN(wchar_t * buf,size_t len,flags & flgs) // called from Put2
 void Shift(wchar_t *end,int save,wchar_t buf2[256],int offset)
     {
     if(save)
-        *end = (char)save;
+        *end = (wchar_t)save;
     wchar_t * e = buf2+wcslen(buf2);
     *(e+1) = '\0';
     for(;e > buf2 + offset;--e)
@@ -1197,7 +1197,7 @@ static void PutHandlingWordWrap(wint_t ch,flags & flgs) // Called from GetPut, G
                         }
                     else
                         {
-                        lastWord[waited++] = (char)ch;
+                        lastWord[waited++] = (wchar_t)ch;
                         }
                     }
                 else if(waited > 0)
@@ -1242,7 +1242,7 @@ static void PutHandlingWordWrap(wint_t ch,flags & flgs) // Called from GetPut, G
           || !isFlatSpace(lastWord[(lastWordIndex + ((sizeof(lastWord)/sizeof(lastWord[0]))-1)) % (sizeof(lastWord)/sizeof(lastWord[0]))])
           )
             {
-            lastWord[lastWordIndex++] = (char)ch;
+            lastWord[lastWordIndex++] = (wchar_t)ch;
             }
         if(lastWordIndex == (sizeof(lastWord)/sizeof(lastWord[0])))
             lastWordIndex = 0;
