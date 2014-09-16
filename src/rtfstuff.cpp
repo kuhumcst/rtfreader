@@ -469,7 +469,10 @@ static char * parseRTFtoken(int level/*,int stat*/)
         first = false;
         }
     if(ch == WEOF && level != 0)
-        fprintf(stderr,"\n%d unbalanced braces\n",level);
+        {
+        fprintf(stderr,"cstrtfreader: %d unbalanced braces in %s\n",level,Option.argi);
+        exit(-1);
+        }
 #ifdef LOGGING
     tentative = 0;
 #endif
@@ -1293,7 +1296,8 @@ static bool segment(int level
 
     if(ch == WEOF && level != 0)
         {
-        fprintf(stderr,"\n%d unbalanced braces\n",level);
+        fprintf(stderr,"cstrtfreader: %d unbalanced braces in %s\n",level,Option.argi);
+        exit(-1);
         }
     return isField;
     }

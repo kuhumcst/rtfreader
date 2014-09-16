@@ -72,7 +72,7 @@ bool DoMultiWords()
             FILE * fpt = fopen(Option.argt,"rb+");
             if(!fpt)
                 {
-                fprintf(stderr,"\nError in opening output file %s\n",Option.argt);
+                fprintf(stderr,"cstrtfreader: Error in opening output file %s\n",Option.argt);
                 return false;
                 }
             int c/* = EOF*/;
@@ -124,7 +124,7 @@ bool DoMultiWords()
             }
         else
             {
-            fprintf(stderr,"\nError in opening multi-word-unit file %s\n",Option.arga);
+            fprintf(stderr,"cstrtfreader: Error in opening multi-word-unit file %s\n",Option.arga);
             return false;
             }
         }

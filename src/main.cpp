@@ -365,7 +365,7 @@ int main(int argc,char ** argv)
             }
         else
             {
-            fprintf(stderr,"\nError in opening abbreviations file %s\n",Option.arga);
+            fprintf(stderr,"cstrtfreader: Error in opening abbreviations file %s\n",Option.arga);
             return 1;
             }
         }
@@ -378,7 +378,7 @@ int main(int argc,char ** argv)
         sourceFile = fopen(Option.argi,"rb");
         if(!sourceFile)
             {
-            fprintf(stderr,"\nError in opening input file %s\n",Option.argi);
+            fprintf(stderr,"cstrtfreader: Error in opening input file %s\n",Option.argi);
             return 1;
             }
         checkEncoding(sourceFile,&Getc,&Ungetc,&Fseek,&Ftell,&Fputc,&Frewind,Option.encoding); // Find out what kind
@@ -386,7 +386,7 @@ int main(int argc,char ** argv)
         }
     else
         {
-        fprintf(stderr,"No input file specified. See %s -h\n",argv[0]);
+        fprintf(stderr,"cstrtfreader: No input file specified. See %s -h\n",argv[0]);
         return 1;
         }
     
@@ -396,7 +396,7 @@ int main(int argc,char ** argv)
         targetFile = fopen(Option.argt,"wb");
         if(!targetFile)
             {
-            fprintf(stderr,"\nError in opening output file %s\n",Option.argt);
+            fprintf(stderr,"cstrtfreader: Error in opening output file %s\n",Option.argt);
             fclose(sourceFile); // Option.argi
             return 1;
             }
