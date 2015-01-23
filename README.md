@@ -6,7 +6,7 @@ The output can optionally be tokenised.
 The program can be informed about *abbreviations* and *multiple word units* by adding extra paramaters.
 
 RTF is chosen as rich input format because
-a) it is an open standard
-b) it is practically always valid because it is machine-made (contrary to e.g. HTML)
-c) it is fairly easy to parse, without the need to also read style sheets (contrary to XML)
-d) there are tools ot there that can convert other formats to RTF while retaining essential lay out
+1. it is an open standard
+2. it is practically always valid because it is machine-made (contrary to e.g. HTML)
+3. it is fairly easy to parse, without the need to also read style sheets (contrary to XML)
+4. there are tools out there that can convert other formats to RTF while retaining essential lay out
