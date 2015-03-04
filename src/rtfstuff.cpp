@@ -289,6 +289,7 @@ static const char * tokensThatAreField[] =
 
 static const char * tokensThatHide[] =
   {"v" /* hidden text */              // Font (Character) Formatting Properties Toggle
+  ,"comment"
   ,NULL
   };
 
