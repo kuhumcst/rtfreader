@@ -458,6 +458,8 @@ static char * parseRTFtoken(int level/*,int stat*/)
                 // drop through
             case 0xA0:
             case ' ':
+            case '\n':
+            case '\r':
 #ifdef LOGGING
                 log(level,0,false);
 #endif
