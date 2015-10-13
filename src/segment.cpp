@@ -509,7 +509,7 @@ wint_t segment::bracketsDotsEntitiesInitialsAbbreviations(STROEM * file,flags & 
             {
             if(Option.tokenize)
                 Dots.Put3(file,' ',flgs);
-            wint_t kar = *SeparatingCharacter;
+            wchar_t kar = *SeparatingCharacter;
             for(;;)
                 {
                 Dots.Put3(file,kar,flgs);

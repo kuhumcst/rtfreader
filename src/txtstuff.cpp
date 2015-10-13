@@ -475,7 +475,7 @@ static unsigned int parseRoman(unsigned int k)
 
     return index;
     }
-
+/*
 static bool testRoman(const char * rom)
     {
     int result;
@@ -494,7 +494,7 @@ static bool testRoman(const char * rom)
     else
         return false;
     }
-/*
+
 static void testRomans()
     {
     const char * numbers[] =
