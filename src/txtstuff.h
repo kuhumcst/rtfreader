@@ -29,7 +29,6 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 class paragraph;
 
-#if !OLDSTATIC
 class textSource: public charSource
     {
     private:
@@ -47,8 +46,4 @@ class textSource: public charSource
                     );
     };
 
-#else
-
-void TextSegmentation(STROEM * sourceFile,paragraph * targetFile);
-#endif
 #endif

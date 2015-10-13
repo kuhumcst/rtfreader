@@ -27,8 +27,6 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "charsource.h"
 //#include "commonstuff.h"
 
-#if !OLDSTATIC
-
 struct MSfont
     {
     int f;
@@ -75,7 +73,4 @@ class rtfSource: public charSource
         void segmentdefault(int ch,int sstatus,charprops CharProps);
     };
 
-#else
-void RTFSegmentation(STROEM * sourceFile,paragraph * targetFile);
-#endif
 #endif

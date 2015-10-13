@@ -77,7 +77,9 @@ class paragraph
         bool overflowing(){return Index >= sizeof(Line)/sizeof(Line[0]) - 1;}
         void append(wchar_t ch);
         void PutHandlingLine(wint_t ch,flags & flgs); // Called from GetPut, GetPutBullet and doTheSegmentation
-        paragraph(STROEM * target):MindTheSpace(0),lastEOLchar(0),last('\n'),wait(0),spaceAfterHyphen(false),dropHyphen(false),allLower(false),allUpper(false),Index(0),lastWordIndex(0),file(target),waited(0){}
+        paragraph(STROEM * target):MindTheSpace(0),lastEOLchar(0),last('\n'),
+            wait(0),spaceAfterHyphen(false),dropHyphen(false),allLower(false),
+            allUpper(false),lastWordIndex(0),waited(0),Index(0),file(target){}
     };
 
 #endif

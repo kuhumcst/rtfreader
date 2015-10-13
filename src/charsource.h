@@ -55,7 +55,6 @@ class charprops
         charprops():i(uninitialised),b(uninitialised),scaps(uninitialised),fs(uninitialised),f(uninitialised),uc(uninitialised){}
     };
 
-#if !OLDSTATIC
 class charSource
     {
     protected:
@@ -98,10 +97,4 @@ class charSource
                     ,charprops CharProps
                     ) = 0;
     };
-#else
-typedef wint_t (*fGetPut)(STROEM * sourceFile,paragraph * outputtext,const long end_offset,flags & flgs,int f);
-
-extern bool checkSentenceStartDueToBullet(int ch,long & begin_offset,const startLine firsttext,const long curr_pos,flags & flgs);
-extern wint_t bulletStuff(STROEM * sourceFile,paragraph * outputtext,const long end_offset,flags & flgs,int f,fGetPut func);
-#endif
 #endif

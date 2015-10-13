@@ -61,7 +61,7 @@ class segment
         void lookWhatsInTheBuffer(STROEM * file,wint_t ch,flags & flgs);
         void PennTreebankTokenize(STROEM * file, wchar_t buf[],size_t lastNonSeparatingCharacter,bool & abbreviation,flags & flgs ,bool & number);
     public:
-        segment():fileStarted(false),notstartofline(false),SegmentEndIndication(newline_seen),neededSegmentDelimiters(0),pos(0){}
+        segment():notstartofline(false),fileStarted(false),SegmentEndIndication(newline_seen),neededSegmentDelimiters(0),pos(0){}
         void Put(STROEM * file,const wchar_t ch,flags & flgs); // Called from PutHandlingWordWrap
     };
 

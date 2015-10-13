@@ -83,42 +83,26 @@ bool doit(STROEM * sourceFile, STROEM * targetFile)
         buf[5] = '\0';
         if(strcmp(buf,"{\\rtf"))
             {
-#if !OLDSTATIC
             textSource TextSource(sourceFile, &TheOutput);
             TextSource.Segmentation();
-#else
-            TextSegmentation(sourceFile, &TheOutput);
-#endif
             }
         else
             {
             Option.encoding = eUTF8;
             forceOutputUnicode(&Fputc,Option.encoding);
-#if !OLDSTATIC
             rtfSource RTFsource(sourceFile, &TheOutput);
             RTFsource.Segmentation();
-#else
-            RTFSegmentation(sourceFile, &TheOutput);
-#endif
             }
         }
     else if(Option.x == 0)
         {
-#if !OLDSTATIC
         textSource TextSource(sourceFile, &TheOutput);
         TextSource.Segmentation();
-#else
-        TextSegmentation(sourceFile, &TheOutput);
-#endif
         }
     else
         {
-#if !OLDSTATIC
         rtfSource RTFsource(sourceFile, &TheOutput);
         RTFsource.Segmentation();
-#else
-        RTFSegmentation(sourceFile, &TheOutput);
-#endif
         }
     Fclose(sourceFile);
     if(targetFile)

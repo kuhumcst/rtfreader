@@ -23,8 +23,6 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #ifndef DATA_H
 #define DATA_H
 
-#define OLDSTATIC 0
-
 #if !defined FILESTREAM
 #define FILESTREAM 1
 #endif
