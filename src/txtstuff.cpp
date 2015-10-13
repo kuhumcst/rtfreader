@@ -2,7 +2,7 @@
 CSTRTFREADER - read flat text or rtf and output flat text, 
                one line per sentence, optionally tokenised
 
-Copyright (C) 2012  Center for Sprogteknologi, University of Copenhagen
+Copyright (C) 2015  Center for Sprogteknologi, University of Copenhagen
 
 This file is part of CSTRTFREADER.
 
@@ -34,13 +34,11 @@ segment[Text]                                                       Recursively 
   +--segmentdefault[Text]                                           Tries to spot sentence endings by looking at interpunction.
        |                                                                Knows of filenames, ellipsis ...
        +--doTheSegmentation[Text]
-            | |
-            | +--GetPutBullet                                       Skip rest of segment. Print bullet character and a blank.
-            |               |
-            +--GetPut[Text] |                                       Read segment. Convert rtf-tokens to their character equivalents.
-            |     |         |                                       Suppress optional hyphens.
-            |     |         |
-            +-----+---------+--PutHandlingLine                      Handle a line, detecting noise
+            | 
+            +--GetPut[Text]                                         Read segment. Convert rtf-tokens to their character equivalents.
+            |     |                                                 Suppress optional hyphens.
+            |     |          
+            +-----+------------PutHandlingLine                      Handle a line, detecting noise
                                  |
                                  +--PutHandlingWordWrap             Handle hyphens at end of line
                                  |    |
@@ -53,38 +51,62 @@ segment[Text]                                                       Recursively 
                                                 +----+--Put3        Start new sentence if an abbreviation is followed by a capital 
                                                           |         letter in a new segment
                                                           |
-                                                          +--Put4   Optionally translate 8-bit set characters to combinations 
+                                                          +--regularizeWhiteSpace   Optionally translate 8-bit set characters to combinations 
                                                                     of 7-bit characters
 */
 /*This source is also used in OCRtidy*/
+#include "data.h"
 
 #include "commonstuff.h"
 #include <string.h>
 #include <assert.h>
 #include "option.h"
-#include "charconv.h"
+#include "letterfunc.h"
 #include "parsesgml.h"
 #include "txtstuff.h"
+#include "paragraph.h"
+#include "flags.h"
+#include "segment.h"
+#include "charsource.h"
 
-static wint_t GetPutText(const long end_offset,flags & flgs)
+
+static bool wordComing = true;
+static bool allcaps = false;//true;
+static bool allNumber = false;//true;
+static bool lowerRoman = false; // Roman number
+static bool upperRoman = false; // Roman number
+static bool arabic = false; // True if number is represented with arabic ciffres (0..9)
+static bool heading = false;
+static int nrStartCaps = 0;
+static int nrNoStartCaps = 0;
+static int nrNonSpaceBytes = 0;
+static int hyphens = 0; // If a line in all other respects seems a header, if line ends with a single hyphen, it is no header after all.
+
+
+
+
+#if !OLDSTATIC
+textSource::textSource(STROEM * sourceFile,paragraph * outputtext):tagendpos(0),charSource(sourceFile,outputtext)
     {
-//    static bool skipSpace = false;
+    pASCIIfyFunction = ASCIIfy;
+    }
+
+#else
+static wint_t GetPutText(STROEM * sourceFile,paragraph * outputtext,const long end_offset,flags & flgs,int f)
+    {
     wint_t ch = 0;
     while(Ftell(sourceFile) < end_offset - 1)
         {
         ch = Getc(sourceFile);
         if((ch != '\n' && ch != '\r') || flgs.inhtmltag)
             {
-#if TEST
-//            putchar('_');
-#endif
-            PutHandlingLine(ch,flgs);
+            outputtext->PutHandlingLine(ch,flgs);
             }
         }
     if(flgs.htmltagcoming)
         {
         if(Option.tokenize)
-            PutHandlingLine(' ',flgs);
+            outputtext->PutHandlingLine(' ',flgs);
         flgs.inhtmltag = true;
         flgs.firstofhtmltag = true;
         flgs.htmltagcoming = false;
@@ -94,163 +116,71 @@ static wint_t GetPutText(const long end_offset,flags & flgs)
         ch = Getc(sourceFile);
         if((ch != '\n' && ch != '\r') || flgs.inhtmltag)
             {
-#if TEST
-//            putchar('!');
-#endif
-            PutHandlingLine(ch,flgs);
+            outputtext->PutHandlingLine(ch,flgs);
             }
         }
     return ch;
     }
 
-static int doTheSegmentationText(const bool nl,bool & oldnl,const long end_offset,long & begin_offset,flags & flgs,bool & WritePar,long & targetFilePos)
+#endif
+
+#if !OLDSTATIC
+void textSource::doTheSegmentation(charprops CharProps,bool newlineAtEndOffset,bool forceEndOfSegmentAfter)
+
+
     {
-    int ret = 0; // 0 if space
     if(-1L < begin_offset && begin_offset < end_offset)
         {
-//        flgs.newSegment = true; // Signal to Put3 to let it handle sentence-ending abbreviations
-        long cur = Ftell(sourceFile);
-        
-        static bool myoldnl = 0;
 
-        bool writepar = false;
-        wint_t ch = 0;
+
+
+
+
+
+
+
+        static bool myoldnl = 0;
         if(!oldnl)
             oldnl = myoldnl;
         if(oldnl)
             {
-            PutHandlingLine(' ',flgs);
-            }
-        Fseek(sourceFile,begin_offset,_SEEK_SET);
 
-        if(writepar || WritePar)
+
+            outputtext->PutHandlingLine(' ',flgs);
+            }
+
+
+        if(WriteParAfterHeadingOrField)
             {
-//            if(oldnl)
+
                 {
+
+
                 if(Option.emptyline)
                     {
-                    PutHandlingLine('\n',flgs);
+                    outputtext->PutHandlingLine('\n',flgs);
                     }
-                PutHandlingLine('\n',flgs);
-                PutHandlingLine('\n',flgs);
+                outputtext->PutHandlingLine('\n',flgs);
+                outputtext->PutHandlingLine('\n',flgs);
                 }
-            WritePar = false;
+            WriteParAfterHeadingOrField = false;
             }
-        myoldnl = nl;
-        static int nbullets = 0;
-        if(flgs.bbullet)
-            {
-            if(!Option.B)
-                {
-                if(Option.separateBullets)
-                    {
-                    
-                    if(nbullets < 5)
-                        {
-                        PutHandlingLine('\n',flgs);
-                        PutHandlingLine('\n',flgs);
-                        }
-                    ret = ch = GetPutText(end_offset,flgs);
-                    if(Option.emptyline)
-                        {
-                        PutHandlingLine('\n',flgs);
-                        ret = 0;
-                        }
-                    
-                    if(nbullets < 5)
-                        {
-                        PutHandlingLine('\n',flgs);
-                        PutHandlingLine('\n',flgs);
-                        ret = 0;
-                        }
-                    flgs.bbullet = false;
-                    ++nbullets;
-                    }
-                else
-                    {
-                    nbullets = 0;
-                    ch = GetPutText(end_offset,flgs);
-                    ret = 1;
-                    }
-                }
-            else if(Option.bullet)
-                {
-                if(Option.separateBullets)
-                    {
-                    if(nbullets < 5)
-                        {
-                        PutHandlingLine('\n',flgs);
-                        PutHandlingLine('\n',flgs);
-                        }
-                    ret = ch = GetPutBullet(end_offset,flgs);
-                    if(Option.emptyline)
-                        {
-                        PutHandlingLine('\n',flgs);
-                        ret = 0;
-                        }
-                    if(nbullets < 5)
-                        {
-                        PutHandlingLine('\n',flgs);
-                        PutHandlingLine('\n',flgs);
-                        ret = 0;
-                        }
-                    flgs.bbullet = false;
-                    ++nbullets;
-                    }
-                else
-                    {
-                    nbullets = 0;
-                    ret = ch = GetPutBullet(end_offset,flgs);
-                    }
-                }
-            else
-                {
-                if(Option.separateBullets)
-                    {
-                    if(nbullets < 5)
-                        {
-                        PutHandlingLine('\n',flgs);
-                        PutHandlingLine('\n',flgs);
-                        }
-                    if(Option.emptyline)
-                        {
-                        PutHandlingLine('\n',flgs);
-                        }
-                    flgs.bbullet = false;
-                    ++nbullets;
-                    }
-                else
-                    {
-                    nbullets = 0;
-                    }
-                }
-            }
-        else
-            {
-            nbullets = 0;
-            /*
-            if(flgs.htmltagcoming)
-                {
-                ret = ch = GetPutText(end_offset,flgs);
-                }
-            else
-                {
-                ret = ch = GetPutText(end_offset,flgs);
-                }*/
-            ret = ch = GetPutText(end_offset,flgs);
-            }
+        myoldnl = newlineAtEndOffset;
 
-        if(nl)
+        wint_t ch = bulletStuff(Off);
+        begin_offset = end_offset;//-1L; 20040120 There are no characters to be excluded between end_offset and begin_offset
+
+        if(forceEndOfSegmentAfter)
+            {
+            outputtext->PutHandlingLine('\n',flgs);
+            outputtext->PutHandlingLine('\n',flgs);
+            }
+        else if(newlineAtEndOffset)
             {
             if(ch == '\n' || ch == '\r')
-                {
-                PutHandlingLine(ch,flgs);
-                }
+                outputtext->PutHandlingLine(ch,flgs);
             else
-                {
-                PutHandlingLine('\n',flgs);
-                }
-            ret = 0;
+                outputtext->PutHandlingLine('\n',flgs);
             }
         else
             {
@@ -258,37 +188,101 @@ static int doTheSegmentationText(const bool nl,bool & oldnl,const long end_offse
                 {
                 case ';':
                 case '?':
-                case '.':
+
                 case '!':
 #if COLONISSENTENCEDELIMITER
                 case ':':
 #endif
+
+                    outputtext->PutHandlingLine('\n',flgs);
+                    break;
                 case '\n':
-                    PutHandlingLine('\n',flgs);
-                    ret = 0;
+                    outputtext->PutHandlingLine('\n',flgs);
                     break;
                 default:
                     {
                     }
                 }
             }
-        targetFilePos = end_offset;
+        oldnl = false;
+        flgs.bbullet = false;
+
+
+        }
+    }
+
+#else
+static void doTheSegmentationText(STROEM * sourceFile,paragraph * outputtext,const bool newlineAtEndOffset,bool & oldnl,long & begin_offset,const long end_offset,flags & flgs,bool & WritePar)
+    {
+    if(-1L < begin_offset && begin_offset < end_offset)
+        {
+        static bool myoldnl = 0;
+        wint_t ch = 0;
+        long cur = Ftell(sourceFile);
+        assert(cur == end_offset);
+
+        if(!oldnl)
+            oldnl = myoldnl;
+        if(oldnl)
+            {
+            outputtext->PutHandlingLine(' ',flgs);
+            }
+        Fseek(sourceFile,begin_offset,_SEEK_SET);
+
+        if(WritePar)
+            {
+            if(Option.emptyline)
+                {
+                outputtext->PutHandlingLine('\n',flgs);
+                }
+            outputtext->PutHandlingLine('\n',flgs);
+            outputtext->PutHandlingLine('\n',flgs);
+            WritePar = false;
+            }
+        myoldnl = newlineAtEndOffset;
+        ch = bulletStuff(sourceFile,outputtext,end_offset,flgs,0,GetPutText);
+        if(newlineAtEndOffset)
+            {
+            if(ch == '\n' || ch == '\r')
+                {
+                outputtext->PutHandlingLine(ch,flgs);
+                }
+            else
+                {
+                outputtext->PutHandlingLine('\n',flgs);
+                }
+            }
+        else
+            {
+            switch(ch)
+                {
+                case ';':
+                case '?':
+                case '!':
+#if COLONISSENTENCEDELIMITER
+                case ':':
+#endif
+                    outputtext->PutHandlingLine('\n',flgs);
+                    break;
+                case '\n':
+                    outputtext->PutHandlingLine('\n',flgs);
+                    break;
+                default:
+                    {
+                    }
+                }
+            }
+        assert(cur == end_offset);
         Fseek(sourceFile,cur,_SEEK_SET);
         begin_offset = end_offset;//-1L; 20040120 There are no characters to be excluded between end_offset and begin_offset
         oldnl = false;
         flgs.bbullet = false;
         }
-    return ret && !isSpace(ret);
     }
+#endif
 
-static wint_t lookaheadText(STROEM * fp,const startLine firsttext,int f)
-    {
-    wint_t next = Getc(fp);
-    Ungetc(next,fp);
-    return next;
-    }
-
-void copyEOLsequence(flags flgs)
+#if !OLDSTATIC
+void textSource::copyEOLsequence()
 /*
 Record the way lines are separated in the input. With this recording,
 the same pattern can be applied to the output.
@@ -318,12 +312,45 @@ the same pattern can be applied to the output.
     Frewind(sourceFile);
     }
 
-bool isHTMLtagComing(wint_t ch,html_tag_class & html_tag, long & tagendpos)
+#else
+static void copyEOLsequence(flags flgs, STROEM * sourceFile)
+/*
+Record the way lines are separated in the input. With this recording,
+the same pattern can be applied to the output.
+*/
+    {
+    wint_t ch;
+    while((ch = Getc(sourceFile)) != '\n' && ch != '\r' && ch != WEOF && ch != 26)
+        {
+        }
+    if(ch == '\n')
+        {
+        flgs.firstEOLchar = '\n';
+        if(Getc(sourceFile) == '\r')
+            flgs.secondEOLchar = '\r';
+        }
+    else if(ch == '\r')
+        {
+        flgs.firstEOLchar = '\r';
+        if(Getc(sourceFile) == '\n')
+            flgs.secondEOLchar = '\n';
+        }
+    else // Assume DOS-format
+        {
+        flgs.firstEOLchar = '\r';
+        flgs.secondEOLchar = '\n';
+        }
+    Frewind(sourceFile);
+    }
+#endif
+
+
+#if !OLDSTATIC
+bool textSource::isHTMLtagComing(wint_t ch)
     {
     bool ret = false;
     if(ch != WEOF && ch != 26 && (html_tag.*tagState)(ch) == tag) 
         {
-
         long curr_pos = Ftell(sourceFile);
         //assert(html_tag.*tagState == &html_tag_class::lt);
         estate Seq = notag;
@@ -346,84 +373,83 @@ bool isHTMLtagComing(wint_t ch,html_tag_class & html_tag, long & tagendpos)
             { // ch == '>'
             assert(ch == '>');
             tagendpos = Ftell(sourceFile);// position of first char after '>'
-            //ch = Getc(sourceFile);
             ret = true;
             }
         Fseek(sourceFile,curr_pos,_SEEK_SET);
         }
     return ret;
     }
+#else
+static bool isHTMLtagComing(STROEM * sourceFile,wint_t ch,html_tag_class & html_tag, long & tagendpos)
+    {
+    bool ret = false;
+    if(ch != WEOF && ch != 26 && (html_tag.*tagState)(ch) == tag) 
+        {
+        long curr_pos = Ftell(sourceFile);
+        //assert(html_tag.*tagState == &html_tag_class::lt);
+        estate Seq = notag;
+        do
+            {
+            ch = Getc(sourceFile);
+            if(ch == WEOF || ch == 26)
+                {
+                Seq = notag;
+                break;
+                }
+            Seq = (html_tag.*tagState)(ch);
+            }
+        while(Seq == tag || Seq == endoftag_startoftag);
+        /*notag,tag,endoftag,endoftag_startoftag*/
+        if(Seq == notag)
+            { // Not an HTML tag. Backtrack.
+            }
+        else // endoftag
+            { // ch == '>'
+            assert(ch == '>');
+            tagendpos = Ftell(sourceFile);// position of first char after '>'
+            ret = true;
+            }
+        Fseek(sourceFile,curr_pos,_SEEK_SET);
+        }
+    return ret;
+    }
+#endif
 
-bool isHeading(startLine & firsttext,wint_t ch,bool & WritePar, flags & flgs)//,bool heading)
+static bool isHeading(startLine & firsttext,wint_t ch,bool & WritePar)
     {
     if(  (firsttext.b.CR && ch == '\r')
       || (firsttext.b.LF && ch == '\n')
       ) // two times LF or two times CR implicates empty line!
-        WritePar = true; // Bart 20050714. headings weren't set 
+        WritePar = true;
 
-    if(flgs.nrNonSpaceBytes > 0)
+    if(nrNonSpaceBytes > 0)
         {
-        if(flgs.hyphens == 0)
+        if(hyphens == 0)
             {
-            if(flgs.allcaps)  // CONSISTENCY
-                {
-                flgs.heading = true;
-                WritePar = true;
-                }
-            if(flgs.allNumber)  // 10   10.     10.2    xi
-                {
-                flgs.heading = true;
-                WritePar = true;
-                }
-
-            /*
-            */
-            if(flgs.startcaps)  // How I Did Feed My Pet
-                {
-                flgs.heading = true;
-                WritePar = true;
-                }
-            if(flgs.nrStartCaps > flgs.nrNoStartCaps) // Discussion of Experimental Proof for the Paradox of Einstein, Rosen, and Podolsky
-                {
-                flgs.heading = true;
-                WritePar = true;
-                }
-            /*
-            */
-            /*
-            if(flgs.nrStartCaps + flgs.nrNoStartCaps < 2) // Foundations of physics
+            if(allcaps)  // CONSISTENCY
                 {
                 heading = true;
                 WritePar = true;
                 }
-            */
-            /*
-            if(flgs.nrNonSpaceBytes < 15) // kartofler
+            if(allNumber)  // 10   10.     10.2    xi
                 {
                 heading = true;
                 WritePar = true;
                 }
-            */
+            if(nrStartCaps > nrNoStartCaps) // Discussion of Experimental Proof for the Paradox of Einstein, Rosen, and Podolsky
+                {
+                heading = true;
+                WritePar = true;
+                }
             }
         else
-            flgs.hyphens = 0;
+            hyphens = 0;
         }
-    /*
-    */
-    /*        flgs.allcaps = true;
-    flgs.startcaps = true;*/
-    /*
-    if(!WritePar && heading)
-        {// A normal line after a heading has WritePar==false and heading==true
-        WritePar = heading;
-        heading = false;
-        }
-    */
-    flgs.nrNonSpaceBytes = 0;
-    return flgs.heading;
+    nrNonSpaceBytes = 0;
+    return heading;
     }
 
-bool skipSegmentation(startLine & firsttext,wint_t ch)
+static bool skipSegmentation(startLine & firsttext,wint_t ch)
     {
     bool skipSeg = false;
     if(ch == '\n')
@@ -444,7 +470,7 @@ bool skipSegmentation(startLine & firsttext,wint_t ch)
                 skipSeg = true;
             }
         }
-    else
+    else // WEOF or 26
         {
         firsttext.b.CR = 1;
         firsttext.b.LF = 1;
@@ -452,139 +478,364 @@ bool skipSegmentation(startLine & firsttext,wint_t ch)
     return skipSeg;
     }
 
-void updateFlags(wint_t ch,flags & flgs)
+typedef enum 
+    {  I_
+    ,  I 
+    , II_
+    , II 
+    ,III 
+    , IV 
+    ,  V_
+    ,  V 
+    , VI_
+    , VI 
+    ,VII_
+    , IX 
+
+    ,  X_
+    ,  X 
+    , XX_
+    , XX 
+    ,XXX 
+    , XL 
+    ,  L_
+    ,  L 
+    , LX_
+    , LX 
+    ,LXX_
+    , XC_
+    ,ONE 
+
+    ,  C_
+    ,  C 
+    , CC_
+    , CC 
+    ,CCC 
+    , CD 
+    ,  D_
+    ,  D 
+    , DC_
+    , DC 
+    ,DCC_
+    , CM_
+    ,TEN 
+
+    ,  M_
+    ,  M 
+    , MM_
+    , MM 
+    ,MMM 
+    ,CEN 
+    ,END 
+    ,  F
+    ,  T
+    } R;
+
+static unsigned int parseRoman(unsigned int k)
     {
-    if(ch == '-')
-        flgs.hyphens++;
-    else
-        flgs.hyphens = 0;
-    if(!flgs.nrNonSpaceBytes)
+    static unsigned int Romans[] =
         {
-        flgs.wordComing = true;
-       //evidently trivial: flgs.nrNonSpaceBytes = 0;
-        flgs.nrNoStartCaps = 0;
+/*   I_*/ 'i',I  ,F   ,     // i..
+/*   I */  0 ,T  ,II_ ,     // i
+/*  II_*/ 'i',II ,IV  ,     // ii..
+/*  II */  0 ,T  ,III ,     // ii
+/* III */ 'i',END,F   ,     // iii
+/*  IV */ 'v',END,IX  ,     // iv
+/*   V_*/ 'v',V  ,I_  ,     // v..
+/*   V */  0 ,T  ,VI_ ,     // v
+/*  VI_*/ 'i',VI ,F   ,     // vi..
+/*  VI */  0 ,T  ,VII_,     // vi
+/* VII_*/ 'i',II ,F   ,     // vii..
+/*  IX */ 'x',END,F   ,
+/*   X_*/ 'x',X  ,V_  ,     // x..
+/*   X */  0 ,T  ,XX_ ,     // x
+/*  XX_*/ 'x',XX ,XL  ,     // xx..
+/*  XX */  0 ,T  ,XXX ,     // xx
+/* XXX */ 'x',ONE,ONE ,     // xxx..
+/*  XL */ 'l',ONE,XC_ ,     // xl..
+/*   L_*/ 'l',L  ,X_  ,     // l..
+/*   L */  0 ,T  ,LX_ ,     // l
+/*  LX_*/ 'x',LX ,ONE ,     // lx..
+/*  LX */  0 ,T  ,LXX_,     // lx
+/* LXX_*/ 'x',XX ,ONE ,     // lxx.. 
+/*  XC_*/ 'c',ONE,ONE ,     // XC..
+/* ONE */  0 ,T  ,V_  ,     // 1-9
+/*   C_*/ 'c',C  ,L_  ,     // c..
+/*   C */  0 ,T  ,CC_ ,     // c
+/*  CC_*/ 'c',CC ,CD  ,     // cc..
+/*  CC */  0 ,T  ,CCC ,     // cc
+/* CCC */ 'c',TEN,TEN ,     // ccc..
+/*  CD */ 'd',TEN,CM_ ,     // cd..
+/*   D_*/ 'd',D  ,C_  ,     // d..
+/*   D */  0 ,T  ,DC_ ,     // d
+/*  DC_*/ 'c',DC ,TEN ,     // dc..
+/*  DC */  0 ,T  ,DCC_,     // dc
+/* DCC_*/ 'c',CC ,TEN ,     // dcc.. 
+/*  CM_*/ 'M',TEN,TEN ,     // cm..
+/* TEN */  0 ,T  ,L_  ,     // 10-99
+/*   M_*/ 'm',M  ,D_  ,     // m..
+/*   M */  0 ,T  ,MM_ ,     // m
+/*  MM_*/ 'm',MM ,D_   ,     // mm..
+/*  MM */  0 ,T  ,MMM ,     // mm
+/* MMM */ 'm',CEN,CEN ,     // mmm..
+/* CEN */  0 ,T  ,D_  ,     // 1-9
+/* END */  0 ,T ,F
+        };
+    static unsigned int index = M_;
+    static bool Upper = false;
+
+    if(k == 128)
+        {
+        index = M_;
+        return M_;
+        }
+
+    if(index == T || index == F)
+        {
+        index = F;
+        return F;
+        }
+
+    if(k <= ' ')
+        k = 0;
+
+    if(index == M_)
+        {
+        if(strchr("IVXLCDM",k))
+            {
+            Upper = true;
+            k = lowerEquivalent(k);
+            }
+        else if(strchr("ivxlcdm",k))
+            Upper = false;
+        else
+            {
+            index = F;
+            return F;
+            }
+        }
+    else if(Upper)
+        {
+        if(!strchr("IVXLCDM",k))
+            {
+            index = F;
+            return F;
+            }
+        k = lowerEquivalent(k);
+        }
+    else
+        {
+        if(!strchr("ivxlcdm",k))
+            {
+            index = F;
+            return F;
+            }
+        }
+
+    for(;index != T && index != F;)
+        {
+        if(k == Romans[3*index])
+            {
+            index = Romans[3*index+1];
+            break;
+            }
+        else
+            {
+            index = Romans[3*index+2];
+            }
+        }
+
+    return index;
+    }
+
+static bool testRoman(char * rom)
+    {
+    int result;
+    parseRoman(128);
+    for(char * p = rom;*p;++p)
+        {
+        result = parseRoman(*p);
+        if(result == T)
+            return true;
+        else if(result == F)
+            return false;
+        }
+    result = parseRoman(0);
+    if(result == T)
+        return true;
+    else
+        return false;
+    }
+
+static void testRomans()
+    {
+    char * numbers[] =
+        {""
+        ,"i"
+        ,"ii"
+        ,"iii"
+        ,"iv"
+        ,"v"
+        ,"vi"
+        ,"vii"
+        ,"viii"
+        ,"ix"
+        ,"x"
+        ,"xi"
+        ,"xiv"
+        ,"xix"
+        ,"mmcdxcviii"
+        ,"MMCDXCVIII"
+        ,"ci"
+        ,"mi"
+        ,"viv"
+        ,"viiii"
+        ,"xxc"
+        ,"ic"
+        ,"lil"
+        ,"mil"
+        ,"MMMCDXLIV"
+        ,"MMMCDxliv"
+        ,0
+        };
+    for(char ** q = numbers;*q;++q)
+        {
+        printf("%s\t:",*q);
+        if(testRoman(*q))
+            printf("OK\n");
+        else
+            printf("..\n");
+        }
+    }
+
+static void updateFlags(wint_t ch,flags & flgs)
+    {
+
+    if(ch == '-')
+        hyphens++;
+    else
+        hyphens = 0;
+    if(!nrNonSpaceBytes)
+        {
+        wordComing = true;
+       //evidently trivial: nrNonSpaceBytes = 0;
+        nrNoStartCaps = 0;
         if(flgs.hyphenFound)
             {
             /*
             h har netop været vært for en institut-
             dag på Institut for Medier, Erkendelse
             */
-            flgs.nrStartCaps = -10;
-            flgs.allcaps = false;
-            flgs.startcaps = false;
+            nrStartCaps = -10;
+            allcaps = false;
             }
         else
             {
-            flgs.nrStartCaps = 0;
-            flgs.allcaps = true;
-            flgs.startcaps = true;
+            nrStartCaps = 0;
+            allcaps = true;
             }
-        flgs.allNumber = true;
-        flgs.lowerRoman = false;
-        flgs.upperRoman = false;
-        flgs.arabic = false;
+        allNumber = true;
+        lowerRoman = false;
+        upperRoman = false;
+        arabic = false;
+        parseRoman(128);
         }
     if(isFlatSpace(ch))
         {
-        flgs.wordComing = true;
+        wordComing = true;
+        int result = parseRoman(0);
+        if(result == F)
+            {
+            upperRoman = false;
+            lowerRoman = false;
+            }
+        parseRoman(128);
         }
     else 
         {
         if(/*isUpper*/!isLower(ch))
             {
-            if(flgs.wordComing)
-                ++flgs.nrStartCaps;
-            if(flgs.allNumber)
+            if(wordComing)
+                ++nrStartCaps;
+            if(allNumber)
                 {
-                if(!flgs.lowerRoman && !flgs.arabic && strchr("IVXLCDM",ch))
+                if(!lowerRoman && !arabic && strchr("IVXLCDM",ch))
                     {
-                    flgs.upperRoman = true;
+                    int result = parseRoman(ch);
+                    allNumber = upperRoman = (result != F);
                     }
                 else
                     {
-                    flgs.allNumber = false;
+                    allNumber = false;
                     }
                 }
             }
         else
             {
             if(!strchr("ivxlcdm-/().:0123456789",ch))
-                flgs.allNumber = false;
-            if(flgs.allNumber)
+                allNumber = false;
+            if(allNumber)
                 {
                 if(strchr("-/().:",ch))
                     {
-                    flgs.lowerRoman = false;
-                    flgs.upperRoman = false;
-                    flgs.arabic = false;
+                    lowerRoman = false;
+                    upperRoman = false;
+                    arabic = false;
                     }
                 else
                     {
-                    if(flgs.upperRoman)
+                    if(upperRoman)
                         {
-                        flgs.allNumber = false;
+                        allNumber = false;
                         }
-                    else if(!flgs.arabic && strchr("ivxlcdm",ch))
+                    else if(!arabic && strchr("ivxlcdm",ch))
                         {
-                        flgs.lowerRoman = true;
+                        int result = parseRoman(ch);
+                        allNumber = lowerRoman = (result != F);                            
                         }
-                    else if(!flgs.lowerRoman && strchr("0123456789",ch))
+                    else if(!lowerRoman && strchr("0123456789",ch))
                         {
-                        flgs.arabic = true;
+                        arabic = true;
                         }
                     else
                         {
-                        flgs.allNumber = false;
+                        allNumber = false;
                         }
                     }
                 }
-            if(flgs.wordComing && !flgs.allNumber) // 'iv. The Big Dipper' should be o.k.
+            if(wordComing && !allNumber) // 'iv. The Big Dipper' should be o.k.
                 {
-                flgs.startcaps = false;
-                ++flgs.nrNoStartCaps;
+                ++nrNoStartCaps;
                 }
-            if(!flgs.allNumber)
-                flgs.allcaps = false; // 'iv. THE BIG DIPPER' should be o.k.
+            if(!allNumber)
+                allcaps = false; // 'iv. THE BIG DIPPER' should be o.k.
             }
-        flgs.nrNonSpaceBytes++;
-        flgs.wordComing = false;
+        nrNonSpaceBytes++;
+        wordComing = false;
         }
     }
 
-
-bool TextSegmentation(STROEM * sourceFile,STROEM * targetFile)
+#if !OLDSTATIC
+bool textSource::segment(int level
+                        ,int sstatus
+                        ,bool PrevIsField  // True if previous sibling block contains a \field
+                        ,charprops CharProps
+                        )
     {
-    if(Option.parseAsXml)
-        parseAsXml();
-    if(Option.parseAsHtml)
-        parseAsHtml();
-    ::sourceFile = sourceFile;
-    ::outputtext = targetFile;
-    flags flgs;
-    startLine firsttext = {{1,0,0,1}}; // SD, LF, CR, WS
-    long targetFilePos = 0L;
-    bool oldnl = false;
-    bool WritePar = false;
+
     wint_t ch;
-    long begin_offset = 0; // The position that indicates the first character that has not been written to output.
-    //long end_offset = 0;   // When calling doTheSegmentationText, this indicates the last position to be written.
-    long tagendpos = 0; // position of first char after '>'
-    long curr_pos = Ftell(sourceFile);// After parsing a html-tag, seeking to curr_pos brings you back to the position where the parsed sequence started.                   
-    html_tag_class html_tag;
+    curr_pos = Ftell(sourceFile);// After parsing a html-tag, seeking to curr_pos brings you back to the position where the parsed sequence started.                   
 
     if(Option.keepEOLsequence)
         {
-        copyEOLsequence(flgs);
+        copyEOLsequence();
+        // SourceFile is rewinded
         }
 
     do
         {
         ch = Getc(sourceFile);
-        long new_pos = Ftell(sourceFile);
-        /** /
-        if(ch > 256)
-            printf("%C %x %d (ftell %ld)\n",ch,ch,ch,new_pos);
-            //*/
+        end_offset = Ftell(sourceFile);
         if(curr_pos >= tagendpos)
             {
             // We are not inside an HTML-tag.
@@ -593,8 +844,11 @@ bool TextSegmentation(STROEM * sourceFile,STROEM * targetFile)
                 flgs.firstafterhtmltag = true;
                 flgs.inhtmltag = false;
                 }
-            // Check whether a well-formed HTML tag is ahead.
-            flgs.htmltagcoming = isHTMLtagComing(ch,html_tag,tagendpos);
+            // Check whether a well-formed HTML tag is ahead. Returns sourceFile
+            // in same file position.
+            flgs.htmltagcoming = isHTMLtagComing(ch);
+//            assert(new_pos == Ftell(sourceFile));
+            assert(end_offset == Ftell(sourceFile));
             }
         else if(flgs.htmltagcoming)
             {
@@ -606,13 +860,6 @@ bool TextSegmentation(STROEM * sourceFile,STROEM * targetFile)
         therefore must be preceded with a newline (WritePar will then be set to 
         true.)
         */
-        //long end_offset = curr_pos;
-        //static bool in_fileName = false;
-        //static bool wordComing = true;
-        //flgs.wordComing = true;
-        //static bool heading = false; 
-        // Used to indicate that a new line must be put in the stream because we've just seen a heading
-        //putchar(ch);
 
         if(  ch ==  '\n'
           || ch == '\r'
@@ -621,31 +868,31 @@ bool TextSegmentation(STROEM * sourceFile,STROEM * targetFile)
           )
             {
             flgs.in_fileName = false;
-            flgs.heading = isHeading(firsttext,ch,WritePar, flgs);//,heading);
+            heading = isHeading(firsttext,ch,WriteParAfterHeadingOrField);
             if(!skipSegmentation(firsttext,ch))
                 {
-                doTheSegmentationText(true,oldnl,new_pos,begin_offset,flgs,WritePar,targetFilePos); // Bart 20040120. true because: Suppose that end of line is end of segment
-                if(!WritePar && flgs.heading)
+                doTheSegmentation(CharProps,true,false); // Bart 20040120. true because: Suppose that end of line is end of segment
+                if(!WriteParAfterHeadingOrField && heading)
                     {// A normal line after a heading has WritePar==false and heading==true
-                    WritePar = flgs.heading;
-                    flgs.heading = false;
+                    WriteParAfterHeadingOrField = true;
+                    heading = false;
                     }
                 }
-            if(firsttext.EOL) // Bart 20061214
+            if(firsttext.EOL)
                 firsttext.b.LS = 1;
             }
         else
             {
             updateFlags(ch,flgs);
             int EOL = firsttext.EOL;
-            bool sentenceEnd = checkSentenceEnd(ch,begin_offset,lookaheadText,firsttext,curr_pos,flgs);
+            bool sentenceEnd = checkSentenceStartDueToBullet(ch);
             if(  sentenceEnd 
               || flgs.htmltagcoming
               || flgs.inhtmltag
-              || (new_pos - begin_offset > MAXSEGMENTLENGTH && isSpace(ch)) // check for buffer overflow
+              || (end_offset - begin_offset > MAXSEGMENTLENGTH && isSpace(ch)) // check for buffer overflow
               )
                 {
-                doTheSegmentationText(false,oldnl,new_pos,begin_offset,flgs,WritePar,targetFilePos);
+                doTheSegmentation(CharProps,false,false); 
                 firsttext.b.SD = 1;
                 firsttext.b.LS = 0;
                 }
@@ -657,15 +904,123 @@ bool TextSegmentation(STROEM * sourceFile,STROEM * targetFile)
             else
                 {
                 firsttext.b.LS = 0;
+                firsttext.EOL = 0; // resets SD, CR and LF
                 }
-            firsttext.EOL = 0; // resets SD, CR and LF
+            }
+        curr_pos = end_offset;
+        }
+    while(ch != WEOF && ch != 26);
+    outputtext->PutHandlingLine('\n',flgs); // 20100106 Flush last line
+    return false;
+    }
+
+#else
+void TextSegmentation(STROEM * sourceFile,paragraph * outputtext)
+    {
+//    testRomans();
+
+    if(Option.A)
+        pRegularizationFnc = ASCIIfy;
+    if(Option.ParseAsXml)
+        parseAsXml();
+    if(Option.ParseAsHtml)
+        parseAsHtml();
+    flags flgs;
+    static startLine firsttext = {{1,0,0,1}}; // SD, LF, CR, WS
+    bool oldnl = false;
+    bool WritePar = false;
+    wint_t ch;
+    long begin_offset = 0; // The position that indicates the first character that has not been written to output.
+    //long end_offset = 0;   // When calling doTheSegmentationText, this indicates the last position to be written.
+    long tagendpos = 0; // position of first char after '>'
+    long curr_pos = Ftell(sourceFile);// After parsing a html-tag, seeking to curr_pos brings you back to the position where the parsed sequence started.                   
+    html_tag_class html_tag;
+
+    if(Option.keepEOLsequence)
+        {
+        copyEOLsequence(flgs,sourceFile);
+        // SourceFile is rewinded
+        }
+
+    do
+        {
+        ch = Getc(sourceFile);
+        long new_pos = Ftell(sourceFile);
+        if(curr_pos >= tagendpos)
+            {
+            // We are not inside an HTML-tag.
+            if(flgs.inhtmltag)
+                {
+                flgs.firstafterhtmltag = true;
+                flgs.inhtmltag = false;
+                }
+            // Check whether a well-formed HTML tag is ahead. Returns sourceFile
+            // in same file position.
+            flgs.htmltagcoming = isHTMLtagComing(sourceFile,ch,html_tag,tagendpos);
+            assert(new_pos == Ftell(sourceFile));
+            }
+        else if(flgs.htmltagcoming)
+            {
+            // We are leaving an HTML-tag and entering a new one.
+            flgs.inhtmltag = true;
+            flgs.htmltagcoming = false;
+            }
+        /* Scan in advance, checking whether the line to come is a heading and 
+        therefore must be preceded with a newline (WritePar will then be set to 
+        true.)
+        */
+
+        if(  ch ==  '\n'
+          || ch == '\r'
+          || ch == WEOF
+          || ch == 26
+          )
+            {
+            flgs.in_fileName = false;
+            heading = isHeading(firsttext,ch,WritePar);
+            if(!skipSegmentation(firsttext,ch))
+                {
+                doTheSegmentationText(sourceFile,outputtext,true,oldnl,begin_offset,new_pos,flgs,WritePar); // Bart 20040120. true because: Suppose that end of line is end of segment
+                if(!WritePar && heading)
+                    {// A normal line after a heading has WritePar==false and heading==true
+                    WritePar = true;
+                    heading = false;
+                    }
+                }
+            if(firsttext.EOL)
+                firsttext.b.LS = 1;
+            }
+        else
+            {
+            updateFlags(ch,flgs);
+            int EOL = firsttext.EOL;
+            bool sentenceEnd = checkSentenceStartDueToBullet(ch,begin_offset,firsttext,curr_pos,flgs);
+            if(  sentenceEnd 
+              || flgs.htmltagcoming
+              || flgs.inhtmltag
+              || (new_pos - begin_offset > MAXSEGMENTLENGTH && isSpace(ch)) // check for buffer overflow
+              )
+                {
+                doTheSegmentationText(sourceFile,outputtext,false,oldnl,begin_offset,new_pos,flgs,WritePar);
+                firsttext.b.SD = 1;
+                firsttext.b.LS = 0;
+                }
+            if(isSpace(ch))
+                {
+                if(EOL)
+                    firsttext.b.LS = 1;
+                }
+            else
+                {
+                firsttext.b.LS = 0;
+                firsttext.EOL = 0; // resets SD, CR and LF
+                }
             }
         curr_pos = new_pos;
         }
     while(ch != WEOF && ch != 26);
-    PutHandlingLine('\n',flgs); // 20100106 Flush last line
-//    flushLine('\n',flgs); // 20080104
+    outputtext->PutHandlingLine('\n',flgs); // 20100106 Flush last line
 
-    Put2(0,flgs);
-    return closeStreams();
+    outputtext->Segment.Put(outputtext->file,0,flgs);
     }
+#endif

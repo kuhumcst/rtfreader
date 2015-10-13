@@ -2,7 +2,7 @@
 CSTRTFREADER - read flat text or rtf and output flat text, 
                one line per sentence, optionally tokenised
 
-Copyright (C) 2012  Center for Sprogteknologi, University of Copenhagen
+Copyright (C) 2015  Center for Sprogteknologi, University of Copenhagen
 
 This file is part of CSTRTFREADER.
 

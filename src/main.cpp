@@ -2,7 +2,7 @@
 CSTRTFREADER - read flat text or rtf and output flat text, 
                one line per sentence, optionally tokenised
 
-Copyright (C) 2012  Center for Sprogteknologi, University of Copenhagen
+Copyright (C) 2015  Center for Sprogteknologi, University of Copenhagen
 
 This file is part of CSTRTFREADER.
 
@@ -21,7 +21,8 @@ along with CSTRTFREADER; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#define VERSION "1.5"
+#define VERSION "2.0"
+#define DATE "2015.10.13"
 
 
 #include "data.h"
@@ -65,13 +66,13 @@ static void doSwitch(int c,char * locoptarg,char * progname,optionStruct & Optio
             break;
         case 'H':
             if(!strcmp(locoptarg,"TML"))
-                Option.parseAsHtml = true;
+                Option.ParseAsHtml = true;
             else
                 Option.suppressHTML = locoptarg && *locoptarg == '-';
             break;
         case 'X':
             if(!strcmp(locoptarg,"ML"))
-                Option.parseAsXml = true;
+                Option.ParseAsXml = true;
             break;
         case 'n':
             Option.suppressNoise = locoptarg && *locoptarg == '-';
@@ -199,7 +200,7 @@ static void doSwitch(int c,char * locoptarg,char * progname,optionStruct & Optio
             Option.keepEOLsequence = !(locoptarg && *locoptarg == '-');
             break;
         case 'v':
-            printf("Version: %s\n",VERSION);
+            printf("Version: %s (%s)\n",VERSION,DATE);
             exit(0);
         }
     }
@@ -381,7 +382,7 @@ int main(int argc,char ** argv)
             fprintf(stderr,"cstrtfreader: Error in opening input file %s\n",Option.argi);
             return 1;
             }
-        checkEncoding(sourceFile,&Getc,&Ungetc,&Fseek,&Ftell,&Fputc,&Frewind,Option.encoding); // Find out what kind
+        checkEncoding(sourceFile,&Getc,&Ungetc,&Fseek,&Fputc,&Frewind,Option.encoding); // Find out what kind
             // of encoding has been used and set function pointers accordingly.
         }
     else
@@ -403,7 +404,12 @@ int main(int argc,char ** argv)
         }
     else
         {
-        targetFile = NULL;
+        char extension[]=".segments";
+        char * oname = new char[strlen(Option.argi)+sizeof(extension)];
+        sprintf(oname,"%s%s",Option.argi,extension);
+        targetFile = fopen(oname,"wb");
+        delete oname;
+        //targetFile = NULL;
         }
 
     return doit(sourceFile, targetFile) ? 0 : 1;

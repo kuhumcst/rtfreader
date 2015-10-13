@@ -2,7 +2,7 @@
 CSTRTFREADER - read flat text or rtf and output flat text, 
                one line per sentence, optionally tokenised
 
-Copyright (C) 2012  Center for Sprogteknologi, University of Copenhagen
+Copyright (C) 2015  Center for Sprogteknologi, University of Copenhagen
 
 This file is part of CSTRTFREADER.
 
@@ -479,7 +479,7 @@ static bool is_UTF8(FILE * fi)
     return !ascii;
     }
 
-void checkEncoding(FILE * fi,getcFnc * Getc,ungetcFnc * Ungetc,fseekFnc * Fseek,ftellFnc * Ftell,fputcFnc * Fputc,frewindFnc * Frewind,encodingType encoding)
+void checkEncoding(FILE * fi,getcFnc * Getc,ungetcFnc * Ungetc,fseekFnc * Fseek,fputcFnc * Fputc,frewindFnc * Frewind,encodingType encoding)
     {
     assert(fi != stdin);
     int b1,b2;

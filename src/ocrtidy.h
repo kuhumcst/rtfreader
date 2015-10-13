@@ -2,7 +2,7 @@
 CSTRTFREADER - read flat text or rtf and output flat text, 
                one line per sentence, optionally tokenised
 
-Copyright (C) 2012  Center for Sprogteknologi, University of Copenhagen
+Copyright (C) 2015  Center for Sprogteknologi, University of Copenhagen
 
 This file is part of CSTRTFREADER.
 
@@ -23,5 +23,5 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #ifndef OCRTIDY_H
 #define OCRTIDY_H
 #include <wchar.h>
-extern double textBadness(wchar_t * line,size_t len);
+extern double textBadness(const wchar_t * line,size_t len);
 #endif

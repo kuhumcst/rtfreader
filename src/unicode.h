@@ -28,7 +28,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 #if FILESTREAM
 
-void checkEncoding(STROEM * fi,getcFnc * Getc,ungetcFnc * Ungetc,fseekFnc * Fseek,ftellFnc * Ftell,fputcFnc * Fputc,frewindFnc * Frewind,encodingType encoding);
+void checkEncoding(STROEM * fi,getcFnc * Getc,ungetcFnc * Ungetc,fseekFnc * Fseek,fputcFnc * Fputc,frewindFnc * Frewind,encodingType encoding);
 void forceOutputUnicode(fputcFnc * Fputc,encodingType encoding);
 
 #endif

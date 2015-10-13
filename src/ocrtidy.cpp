@@ -2,7 +2,7 @@
 CSTRTFREADER - read flat text or rtf and output flat text, 
                one line per sentence, optionally tokenised
 
-Copyright (C) 2012  Center for Sprogteknologi, University of Copenhagen
+Copyright (C) 2015  Center for Sprogteknologi, University of Copenhagen
 
 This file is part of CSTRTFREADER.
 
@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 #include "ocrtidy.h"
 #include "commonstuff.h"
-#include "charconv.h"
+#include "letterfunc.h"
 
 static const bool regularNonAlphaNum[256] =
     {
@@ -140,18 +140,17 @@ static bool VeryIrregularNonAlphaNum(int kar)
         }
     }
 
-
-double textBadness(wchar_t * line,size_t len)
+double textBadness(const wchar_t * line,size_t len)
     {
     if(len < 2)
         return 0;
     int bad = 0;
-    while((len > 0 && *line == ' ') || *line == '\t')
+    while((len > 0 && *line == ' ') || *line == '\t' || *line == 0x3000)
         {
         --len;
         ++line;
         }
-    while(len > 0 && (line[len-1] == ' ' || line[len-1] == '\t'))
+    while(len > 0 && isFlatSpace(line[len-1]))
         --len;
     size_t k;
     size_t chars[256];

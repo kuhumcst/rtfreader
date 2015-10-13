@@ -2,7 +2,7 @@
 CSTRTFREADER - read flat text or rtf and output flat text, 
                one line per sentence, optionally tokenised
 
-Copyright (C) 2012  Center for Sprogteknologi, University of Copenhagen
+Copyright (C) 2015  Center for Sprogteknologi, University of Copenhagen
 
 This file is part of CSTRTFREADER.
 
@@ -22,6 +22,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 #ifndef DATA_H
 #define DATA_H
+
+#define OLDSTATIC 0
 
 #if !defined FILESTREAM
 #define FILESTREAM 1
@@ -227,6 +229,8 @@ typedef wint_t (*fputcFnc)(wint_t c,STROEM * fo);
 typedef int (*fcloseFnc)(STROEM * fi);
 typedef void (*frewindFnc)(STROEM * fi);
 
+struct flags;
+
 extern getcFnc Getc;
 extern ungetcFnc Ungetc;
 extern fseekFnc Fseek;
@@ -234,5 +238,30 @@ extern ftellFnc Ftell;
 extern fputcFnc Fputc;
 extern fcloseFnc Fclose;
 extern frewindFnc Frewind;
+
+extern const bool space[256];
+// ocrtidy.cpp only:
+extern const bool vowels[256];
+
+
+extern bool isSpace(int s);
+extern bool isFlatSpace(int s);
+#define isVowel(s) (0 <= s && s < 256 && vowels[s])
+
+#if COLONISSENTENCEDELIMITER
+#define isPunct(s) (s == ';' || s == '?' || s == '.' || s == '!' || s == ':')
+#define isSemiPunct(s) (s == ',')
+#else
+#define isPunct(s) (s == ';' || s == '?' || s == '.' || s == '!')
+#define isSemiPunct(s) (s == ',' || s == ':')
+#endif
+#define isDigit(s) ('0' <= (s) && (s) <= '9')
+
+
+extern const wchar_t SEP[];
+extern const wchar_t QUOTE[]; 
+extern const wchar_t QUANTITY[];
+extern const wchar_t RBRACKET[];
+extern const wchar_t LBRACKET[];
 
 #endif

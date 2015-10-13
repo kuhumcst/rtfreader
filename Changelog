@@ -1,0 +1,14 @@
+Version: 2.0 (2015.10.13)
+-------------------------
+(Changelog starts here.)
+Better handling of RTF coming from other sources than Microsoft s/w.
+Better handling of periods and other punctuation.
+Linebreaks in more appropriate places. (Because of previous point.)
+Parsing of roman numbers.
+Restructured the program: Still spagetti, but now with tomato sauce (more
+source files, more classes).
+
+Version 1.5
+-----------
+The previous version.
+

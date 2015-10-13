@@ -2,7 +2,7 @@
 CSTRTFREADER - read flat text or rtf and output flat text, 
                one line per sentence, optionally tokenised
 
-Copyright (C) 2012  Center for Sprogteknologi, University of Copenhagen
+Copyright (C) 2015  Center for Sprogteknologi, University of Copenhagen
 
 This file is part of CSTRTFREADER.
 
@@ -53,7 +53,7 @@ segment[Text]                                                       Recursively 
                                                 +----+--Put3        Start new sentence if an abbreviation is followed by a capital 
                                                           |         letter in a new segment
                                                           |
-                                                          +--Put4   Optionally translate 8-bit set characters to combinations 
+                                                          +--regularizeWhiteSpace   Optionally translate 8-bit set characters to combinations 
                                                                     of 7-bit characters
 */
 /*This source is also used in OCRtidy*/
@@ -65,18 +65,15 @@ segment[Text]                                                       Recursively 
 #include "txtstuff.h"
 #include <string.h>
 #include "option.h"
+#include "paragraph.h"
+#include "flags.h"
 #if FILESTREAM
 #include "abbrev.h"
 #include "mwu.h"
 #endif
 bool doit(STROEM * sourceFile, STROEM * targetFile)
     {
-//    test = fopen("test","w");
-//TODO    readArgs(argc, argv,Option);
-    if(Option.A)
-        pPut4 = Put4A;
-    
-    bool doneOK = false;
+    paragraph TheOutput(targetFile);
     if(Option.x == '+')
         {
         char buf[6];
@@ -86,30 +83,54 @@ bool doit(STROEM * sourceFile, STROEM * targetFile)
         buf[5] = '\0';
         if(strcmp(buf,"{\\rtf"))
             {
-            doneOK = TextSegmentation(sourceFile, targetFile);
+#if !OLDSTATIC
+            textSource TextSource(sourceFile, &TheOutput);
+            TextSource.Segmentation();
+#else
+            TextSegmentation(sourceFile, &TheOutput);
+#endif
             }
         else
             {
             Option.encoding = eUTF8;
             forceOutputUnicode(&Fputc,Option.encoding);
-            doneOK = RTFSegmentation(sourceFile, targetFile);
+#if !OLDSTATIC
+            rtfSource RTFsource(sourceFile, &TheOutput);
+            RTFsource.Segmentation();
+#else
+            RTFSegmentation(sourceFile, &TheOutput);
+#endif
             }
         }
     else if(Option.x == 0)
         {
-        doneOK = TextSegmentation(sourceFile, targetFile);
+#if !OLDSTATIC
+        textSource TextSource(sourceFile, &TheOutput);
+        TextSource.Segmentation();
+#else
+        TextSegmentation(sourceFile, &TheOutput);
+#endif
         }
     else
         {
-        doneOK = RTFSegmentation(sourceFile, targetFile);
+#if !OLDSTATIC
+        rtfSource RTFsource(sourceFile, &TheOutput);
+        RTFsource.Segmentation();
+#else
+        RTFSegmentation(sourceFile, &TheOutput);
+#endif
         }
-#if FILESTREAM
-    if(doneOK)
+    Fclose(sourceFile);
+    if(targetFile)
         {
+        flags flgs;
+        regularizeWhiteSpace(targetFile,'\n',flgs);
+        Fclose(targetFile);
+#if FILESTREAM
         if(!DoMultiWords())
             return false;
-        }
 #endif
-//    fclose(test);
+        }
+
     return true;
     }

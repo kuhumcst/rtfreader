@@ -44,19 +44,22 @@ RM=rm -f
 PROJECTSRC=\
 	abbrev.cpp\
 	argopt.cpp\
-	charconv.cpp\
+	charsource.cpp\
 	commonstuff.cpp\
 	data.cpp\
+	dots.cpp\
 	$(LETTERFUNCDIR)/letter.cpp\
 	$(LETTERFUNCDIR)/letterfunc.cpp\
 	main.cpp\
 	mwu.cpp\
 	ocrtidy.cpp\
 	option.cpp\
+	paragraph.cpp\
 	$(SGMLDIR)/parsesgml.cpp\
 	readlist.cpp\
 	readoptf.cpp\
 	rtfstuff.cpp\
+	segment.cpp\
 	txtstuff.cpp\
 	unicode.cpp
 
@@ -66,19 +69,22 @@ CSTPROJECTSRC=\
 PROJECTOBJS=\
 	abbrev.o\
 	argopt.o\
-	charconv.o\
+	charsource.o\
 	commonstuff.o\
 	data.o\
+	dots.o\
 	letter.o\
 	letterfunc.o\
 	main.o\
 	mwu.o\
 	ocrtidy.o\
 	option.o\
+	paragraph.o\
 	parsesgml.o\
 	readlist.o\
 	readoptf.o\
 	rtfstuff.o\
+	segment.o\
 	txtstuff.o\
 	unicode.o
 
