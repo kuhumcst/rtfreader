@@ -31,8 +31,9 @@ typedef enum {eNoconversion,eISO,eUTF8,eUTF16} encodingType;
 
 struct optionStruct
     {
-    bool emptyline;           // -e              Insert empty line after line not ending with punctuation.
+    bool Emptyline;           // -e              Insert empty line after line not ending with punctuation.
                               // -e-             Do not output empty lines.
+    bool emptyline;           // (always true)
     bool tokenize;            // -T              Tokenize output text file.
                               // -T-             Do not tokenize output text file. (same as -P-).
     bool separateBullets;     // -b              Put bullets on separate lines.
@@ -111,7 +112,8 @@ aap <?php >? ?> noot .
     optionStruct()
         {
         tokenize = false;
-        emptyline = false;
+        Emptyline = false;
+        emptyline = true;
         separateBullets = false;
         arga = NULL;
         argm = NULL;

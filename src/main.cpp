@@ -129,7 +129,7 @@ static void doSwitch(int c,char * locoptarg,char * progname,optionStruct & Optio
 -T -b -y -e -s 
 */
         case 'e':
-            Option.emptyline = !(locoptarg && *locoptarg == '-');
+            Option.Emptyline = !(locoptarg && *locoptarg == '-');
             break;
         case 'E':
             if(locoptarg)

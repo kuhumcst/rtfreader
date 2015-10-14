@@ -34,6 +34,8 @@ void Put(STROEM * file,wchar_t ch,flags & flgs); // Called from GetPutBullet and
 
 void regularizeWhiteSpace(STROEM * file,wint_t c,flags & flgs) // Called from Put3
     {
+    static wint_t previousCharacter = 0;
+    static bool previousWasNewLine = false;
     static bool previousWasFlatSpace = false;
     if(isFlatSpace(c))// c == ' ' || c == 0xA0)
         previousWasFlatSpace = true;
@@ -41,27 +43,39 @@ void regularizeWhiteSpace(STROEM * file,wint_t c,flags & flgs) // Called from Pu
         {
         if(c == '\n')
             {
-            if(Option.spaceAtEndOfLine)
-                Fputc(' ',file);// Add extra space before new line (compatibility mode).
-            flgs.writtentoline = false;
-            if(Option.keepEOLsequence)
+            if(!previousWasNewLine)
                 {
-                if(flgs.firstEOLchar != 0)
+                if(Option.spaceAtEndOfLine)
+                    Fputc(' ',file);// Add extra space before new line (compatibility mode).
+                flgs.writtentoline = false;
+                int reps = 1;
+                if(Option.Emptyline && !isPunct(previousCharacter))
+                    reps = 2;
+                for(int i = 0;i < reps;++i)
                     {
-                    Fputc(flgs.firstEOLchar,file);
-                    if(flgs.secondEOLchar != 0)
-                        Fputc(flgs.secondEOLchar,file);
+                    if(Option.keepEOLsequence)
+                        {
+                        if(flgs.firstEOLchar != 0)
+                            {
+                            Fputc(flgs.firstEOLchar,file);
+                            if(flgs.secondEOLchar != 0)
+                                Fputc(flgs.secondEOLchar,file);
+                            }
+                        else
+                            Fputc(c,file);
+                        }
+                    else
+                        {
+                        Fputc(c,file);
+                        }
                     }
-                else
-                    Fputc(c,file);
-                }
-            else
-                {
-                Fputc(c,file);
+                previousWasNewLine = true;
                 }
             }
         else
             {
+            previousWasNewLine = false;
+            previousCharacter = c;
             if(  flgs.writtentoline
               && previousWasFlatSpace
               )// last == ' ' ||  last == 0xA0)
