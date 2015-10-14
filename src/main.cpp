@@ -21,8 +21,8 @@ along with CSTRTFREADER; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#define VERSION "2.0"
-#define DATE "2015.10.13"
+#define VERSION "2.01"
+#define DATE "2015.10.14"
 
 
 #include "data.h"
