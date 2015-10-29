@@ -391,7 +391,6 @@ int main(int argc,char ** argv)
         return 1;
         }
     
-    STROEM * targetFile = NULL;
     if(Option.argt)
         {
         return doit(sourceFile, Option.argt) ? 0 : 1;
