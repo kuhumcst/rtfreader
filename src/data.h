@@ -253,6 +253,7 @@ extern bool isFlatSpace(int s);
 #define isPunct(s) (s == ';' || s == '?' || s == '.' || s == '!')
 #define isSemiPunct(s) (s == ',' || s == ':')
 #endif
+#define isSentencePunct(s) (s == '?' || s == '.' || s == '!')
 #define isDigit(s) ('0' <= (s) && (s) <= '9')
 
 

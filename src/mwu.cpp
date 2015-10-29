@@ -61,7 +61,7 @@ static bool readMWU(FILE * a)
     return res;
     }
 
-bool DoMultiWords()
+bool DoMultiWords(const char * argt)
     {
     if(Option.argm)
         {
@@ -69,10 +69,10 @@ bool DoMultiWords()
         if(a)
             {
             readMWU(a);
-            FILE * fpt = fopen(Option.argt,"rb+");
+            FILE * fpt = fopen(argt,"rb+");
             if(!fpt)
                 {
-                fprintf(stderr,"cstrtfreader: Error in opening output file %s\n",Option.argt);
+                fprintf(stderr,"cstrtfreader: Error in opening output file %s\n",argt);
                 return false;
                 }
             int c/* = EOF*/;

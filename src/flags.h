@@ -42,6 +42,8 @@ struct flags
     bool in_fileName:1;
     //bool certainSentenceEndMarker:1; // Set to false if period found and it might be part of abbreviation in gazetteer
     //bool previousWasFlatSpace:1; // regularizeWhiteSpace
+    int punctuationFound;
+    int semiPunctuationFound;
     int hyphenFound;
 //    int f; // font
     //int uc; // \ucN	This keyword represents the number (count) of bytes that
@@ -80,6 +82,8 @@ struct flags
         number_final_dot = 0;
         in_fileName = false;
         //hyphens = 0;
+        punctuationFound = 0;
+        semiPunctuationFound = 0;
         hyphenFound = 0;
         //f = 0;
         //uc = 2;

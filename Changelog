@@ -1,3 +1,10 @@
+Version: 2.02 (2015.10.28)
+--------------------------
+Lines with most words beginning with a capital letter are not always head
+lines. The previous line must not seem to be unfinished: no punctuation,
+comma or colon as last punctuation, hyphen as if word is wrapped.
+
+
 Version: 2.0 (2015.10.13)
 -------------------------
 (Changelog starts here.)

@@ -71,8 +71,17 @@ segment[Text]                                                       Recursively 
 #include "abbrev.h"
 #include "mwu.h"
 #endif
-bool doit(STROEM * sourceFile, STROEM * targetFile)
+bool doit(STROEM * sourceFile,const char * argt)
     {
+    STROEM * targetFile;
+    targetFile = fopen(argt,"wb");
+    if(!targetFile)
+        {
+        fprintf(stderr,"cstrtfreader: Error in opening output file %s\n",Option.argt);
+        fclose(sourceFile); // Option.argi
+        return 1;
+        }
+
     paragraph TheOutput(targetFile);
     if(Option.x == '+')
         {
@@ -111,7 +120,7 @@ bool doit(STROEM * sourceFile, STROEM * targetFile)
         regularizeWhiteSpace(targetFile,'\n',flgs);
         Fclose(targetFile);
 #if FILESTREAM
-        if(!DoMultiWords())
+        if(!DoMultiWords(argt))
             return false;
 #endif
         }

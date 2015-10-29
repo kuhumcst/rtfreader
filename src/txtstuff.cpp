@@ -548,7 +548,10 @@ static void updateFlags(wint_t ch,flags & flgs)
         wordComing = true;
        //evidently trivial: nrNonSpaceBytes = 0;
         nrNoStartCaps = 0;
-        if(flgs.hyphenFound)
+        if(  flgs.hyphenFound
+          || flgs.semiPunctuationFound
+          || ((!flgs.punctuationFound || flgs.in_abbreviation || flgs.person_name == initial) && flgs.writtentoline)
+          )
             {
             /*
             h har netop været vært for en institut-
@@ -696,6 +699,7 @@ bool textSource::segment(int level
             {
             flgs.in_fileName = false;
             heading = isHeading(firsttext,ch,WriteParAfterHeadingOrField);
+            //heading = false;
             if(!skipSegmentation(firsttext,ch))
                 {
                 doTheSegmentation(CharProps,true,false); // Bart 20040120. true because: Suppose that end of line is end of segment

@@ -108,7 +108,15 @@ void paragraph::PutHandlingWordWrap(const wint_t ch,flags & flgs) // Called from
         }
     else
         {
-        if(ch == '-')
+        if(isSentencePunct(ch))
+            {
+            ++flgs.punctuationFound;
+            }
+        else if(isSemiPunct(ch))
+            {
+            ++flgs.semiPunctuationFound;
+            }
+        else if(ch == '-')
             {
             ++flgs.hyphenFound;
             }
@@ -122,6 +130,8 @@ void paragraph::PutHandlingWordWrap(const wint_t ch,flags & flgs) // Called from
                         {
                         hyphenate(flgs);
                         wait = 0;
+                        flgs.punctuationFound = 0;
+                        flgs.semiPunctuationFound = 0;
                         flgs.hyphenFound = 0;
                         spaceAfterHyphen = false;
                         }
@@ -197,6 +207,8 @@ void paragraph::PutHandlingWordWrap(const wint_t ch,flags & flgs) // Called from
                         {
                         considerHyphenation(flgs);
                         wait = 0;
+                        flgs.punctuationFound = 0;
+                        flgs.semiPunctuationFound = 0;
                         flgs.hyphenFound = 0;
                         spaceAfterHyphen = false;
                         }
@@ -214,6 +226,8 @@ void paragraph::PutHandlingWordWrap(const wint_t ch,flags & flgs) // Called from
                         {
                         hyphenate(flgs);
                         wait = 0;
+                        flgs.punctuationFound = 0;
+                        flgs.semiPunctuationFound = 0;
                         flgs.hyphenFound = 0;
                         spaceAfterHyphen = false;
                         Segment.Put(file,ch,flgs);
@@ -227,6 +241,8 @@ void paragraph::PutHandlingWordWrap(const wint_t ch,flags & flgs) // Called from
                     {
                     considerHyphenation(flgs);
                     wait = 0;
+                    flgs.punctuationFound = 0;
+                    flgs.semiPunctuationFound = 0;
                     flgs.hyphenFound = 0;
                     spaceAfterHyphen = false;
                     Segment.Put(file,' ',flgs);
@@ -241,6 +257,12 @@ void paragraph::PutHandlingWordWrap(const wint_t ch,flags & flgs) // Called from
         }
     if(!isFlatSpace(ch))
         {
+        if(ch != '\n' && !isSentencePunct(ch) && !wait)
+            flgs.punctuationFound = 0;
+
+        if(ch != '\n' && !isSemiPunct(ch) && !wait)
+            flgs.semiPunctuationFound = 0;
+
         if(ch != '\n' && ch != '-' && flgs.hyphenFound && !wait) // A-bomb
             {
             int k;

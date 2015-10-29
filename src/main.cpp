@@ -21,8 +21,8 @@ along with CSTRTFREADER; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#define VERSION "2.01"
-#define DATE "2015.10.14"
+#define VERSION "2.02"
+#define DATE "2015.10.28"
 
 
 #include "data.h"
@@ -394,24 +394,16 @@ int main(int argc,char ** argv)
     STROEM * targetFile = NULL;
     if(Option.argt)
         {
-        targetFile = fopen(Option.argt,"wb");
-        if(!targetFile)
-            {
-            fprintf(stderr,"cstrtfreader: Error in opening output file %s\n",Option.argt);
-            fclose(sourceFile); // Option.argi
-            return 1;
-            }
+        return doit(sourceFile, Option.argt) ? 0 : 1;
         }
     else
         {
         char extension[]=".segments";
         char * oname = new char[strlen(Option.argi)+sizeof(extension)];
         sprintf(oname,"%s%s",Option.argi,extension);
-        targetFile = fopen(oname,"wb");
+        int ret = doit(sourceFile, oname) ? 0 : 1;
         delete oname;
-        //targetFile = NULL;
+        return ret;
         }
-
-    return doit(sourceFile, targetFile) ? 0 : 1;
     }
 #endif
