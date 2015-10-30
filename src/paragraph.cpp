@@ -131,10 +131,10 @@ void paragraph::PutHandlingWordWrap(const wint_t ch,flags & flgs) // Called from
                         hyphenate(flgs);
                         wait = 0;
                         flgs.punctuationFound = 0;
-                        flgs.semiPunctuationFound = 0;
                         flgs.hyphenFound = 0;
                         spaceAfterHyphen = false;
                         }
+                    flgs.semiPunctuationFound = 0;
                     Segment.Put(file,'\n',flgs);
                     break;
                 case '-':
@@ -175,9 +175,9 @@ void paragraph::PutHandlingWordWrap(const wint_t ch,flags & flgs) // Called from
                             allLower = false;
                         if(isAlpha(k) && k != '-')
                             {
-                            if(/*isUpper*/!isLower(k))
+                            if(!isLower(k))
                                 Upper = true;
-                            if(/*isLower*/!isUpper(k))
+                            if(!isUpper(k))
                                 allUpper = false;
                             }
                         else if(k != '-')

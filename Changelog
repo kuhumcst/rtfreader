@@ -1,3 +1,7 @@
+Version: 2.03 (2015.10.30)
+--------------------------
+More subtle improvements to segmentation.
+
 Version: 2.02 (2015.10.28)
 --------------------------
 Lines with most words beginning with a capital letter are not always head

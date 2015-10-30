@@ -247,9 +247,9 @@ double textBadness(const wchar_t * line,size_t len)
                     ++numConsonant;
                     ++numConsonantOnArow;
                     }
-                if(/*isLower*/!isUpper(kar))
+                if(!isUpper(kar))
                     hasLower = true;
-                else if(!first && /*isUpper*/!isLower(kar))
+                else if(!first && !isLower(kar))
                     {
                    // hasUpper = true;
                     if(hasLower)

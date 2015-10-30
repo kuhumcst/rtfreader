@@ -44,6 +44,7 @@ class textSource: public charSource
                     ,bool PrevIsField  // True if previous sibling block contains a \field
                     ,charprops CharProps
                     );
+        void updateFlags(wint_t ch,flags & flgs);
     };
 
 #endif

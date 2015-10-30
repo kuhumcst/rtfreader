@@ -77,6 +77,7 @@ static bool lowerRoman = false; // Roman number
 static bool upperRoman = false; // Roman number
 static bool arabic = false; // True if number is represented with arabic ciffres (0..9)
 static bool heading = false;
+static bool lastCharIsSemipunct = false;
 static int nrStartCaps = 0;
 static int nrNoStartCaps = 0;
 static int nrNonSpaceBytes = 0;
@@ -254,20 +255,23 @@ static bool isHeading(startLine & firsttext,wint_t ch,bool & WritePar)
         {
         if(hyphens == 0)
             {
-            if(allcaps)  // CONSISTENCY
+            if(!lastCharIsSemipunct)
                 {
-                heading = true;
-                WritePar = true;
-                }
-            if(allNumber)  // 10   10.     10.2    xi
-                {
-                heading = true;
-                WritePar = true;
-                }
-            if(nrStartCaps > nrNoStartCaps) // Discussion of Experimental Proof for the Paradox of Einstein, Rosen, and Podolsky
-                {
-                heading = true;
-                WritePar = true;
+                if(allcaps)  // CONSISTENCY
+                    {
+                    heading = true;
+                    WritePar = true;
+                    }
+                if(allNumber)  // 10   10.     10.2    xi
+                    {
+                    heading = true;
+                    WritePar = true;
+                    }
+                if(/*nrStartCaps > 1 &&*/ nrStartCaps > nrNoStartCaps) // Discussion of Experimental Proof for the Paradox of Einstein, Rosen, and Podolsky
+                    {
+                    heading = true;
+                    WritePar = true;
+                    }
                 }
             }
         else
@@ -536,7 +540,7 @@ static void testRomans()
         }
     }
 */
-static void updateFlags(wint_t ch,flags & flgs)
+void textSource::updateFlags(wint_t ch,flags & flgs)
     {
 
     if(ch == '-')
@@ -545,19 +549,42 @@ static void updateFlags(wint_t ch,flags & flgs)
         hyphens = 0;
     if(!nrNonSpaceBytes)
         {
+        if(!isUpper(ch) && !allNumber)
+/*
+1. 
+omejitev  odvisno  od.
+
+==>
+
+1 .
+omejitev odvisno od .
+
+because the 'header' 1. seems to be a list (or section) number. 
+It is not likely starting a sentence, even though the first
+character is lower case.
+*/
+            WriteParAfterHeadingOrField = false;
         wordComing = true;
+        lastCharIsSemipunct = false;
        //evidently trivial: nrNonSpaceBytes = 0;
         nrNoStartCaps = 0;
         if(  flgs.hyphenFound
           || flgs.semiPunctuationFound
-          || ((!flgs.punctuationFound || flgs.in_abbreviation || flgs.person_name == initial) && flgs.writtentoline)
+          || (  (  (  !flgs.punctuationFound
+                   && !isUpper(ch)
+                   )
+                || flgs.in_abbreviation
+                || flgs.person_name == initial
+                ) 
+             && flgs.writtentoline
+             )
           )
             {
             /*
             h har netop været vært for en institut-
             dag på Institut for Medier, Erkendelse
             */
-            nrStartCaps = -10;
+            nrStartCaps = -10; // Smaller chance that line starting here is a headline.
             allcaps = false;
             }
         else
@@ -565,7 +592,8 @@ static void updateFlags(wint_t ch,flags & flgs)
             nrStartCaps = 0;
             allcaps = true;
             }
-        allNumber = true;
+
+        allNumber = !isFlatSpace(ch);
         lowerRoman = false;
         upperRoman = false;
         arabic = false;
@@ -584,10 +612,14 @@ static void updateFlags(wint_t ch,flags & flgs)
         }
     else 
         {
-        if(/*isUpper*/!isLower(ch))
+        lastCharIsSemipunct = isSemiPunct(ch);
+        if(!isLower(ch))
             {
             if(wordComing)
-                ++nrStartCaps;
+                {
+                if(isUpper(ch))
+                    ++nrStartCaps;
+                }
             if(allNumber)
                 {
                 if(!lowerRoman && !arabic && strchr("IVXLCDM",ch))
@@ -636,7 +668,8 @@ static void updateFlags(wint_t ch,flags & flgs)
                 }
             if(wordComing && !allNumber) // 'iv. The Big Dipper' should be o.k.
                 {
-                ++nrNoStartCaps;
+                if(!isUpper(ch))
+                    ++nrNoStartCaps;
                 }
             if(!allNumber)
                 allcaps = false; // 'iv. THE BIG DIPPER' should be o.k.
@@ -699,7 +732,6 @@ bool textSource::segment(int level
             {
             flgs.in_fileName = false;
             heading = isHeading(firsttext,ch,WriteParAfterHeadingOrField);
-            //heading = false;
             if(!skipSegmentation(firsttext,ch))
                 {
                 doTheSegmentation(CharProps,true,false); // Bart 20040120. true because: Suppose that end of line is end of segment
