@@ -11,3 +11,10 @@ RTF is chosen as rich input format because
 2. it is practically always valid because it is machine-made (contrary to e.g. HTML)
 3. it is fairly easy to parse, without the need to also read style sheets (contrary to XML)
 4. there are tools out there that can convert other formats to RTF while retaining essential lay out
+
+**Online availability**
+
+RTFreader is used as segmenter and tokeniser at CST's website
+(http://ada.sc.ku.dk/tools/index.php?lang=en)
+and an integrated webservice in the CLARIN-DK infrastructure
+(https://clarin.dk/).
