@@ -486,7 +486,7 @@ char * rtfSource::parseRTFtoken(int level)
                     if(ch == '-')
                         {
                         if(position == 1)
-                            positive == false;  // \u-12345
+                            positive = false;  // \u-12345
                         else if(!positive)       // \u--
                             perhapsUnicode = false;
                         }
