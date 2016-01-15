@@ -1,3 +1,14 @@
+Version: 2.1 (2016.01.15)
+-------------------------
+Corrected interpretation of unicode characters \uN.
+1) Absence of \ucM now means M == 1, as the RTF standard prescribes. Which
+   means that we must assume that the unicode character is followed by a
+   single character that figures as stand-in in case the unicode character
+   cannot be handled.
+2) Parsing \u51234anumber stops when the number after \u is as big as it can
+   be in a short integer or when a non-digit is seen after having seen a
+   number after \u
+   
 Version: 2.03 (2015.10.30)
 --------------------------
 More subtle improvements to segmentation.

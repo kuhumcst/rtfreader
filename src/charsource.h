@@ -52,7 +52,7 @@ class charprops
         int fs;
         int f;
         int uc;
-        charprops():i(uninitialised),b(uninitialised),scaps(uninitialised),fs(uninitialised),f(uninitialised),uc(uninitialised){}
+        charprops():i(uninitialised),b(uninitialised),scaps(uninitialised),fs(uninitialised),f(uninitialised),uc(1){}
     };
 
 class charSource

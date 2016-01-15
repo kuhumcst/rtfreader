@@ -358,7 +358,10 @@ static CharPropN characterPropertyWithNumericalParameter[] = /* strncmp + number
 char * rtfSource::parseRTFtoken(int level)
     {
     wint_t ch;
-    bool first = true;
+    int position = 0;
+    bool perhapsUnicode = false;
+    bool positive = true;
+    int shortInt = 0;
     int index = 1;
     static char token[100];
     token[0] = '\\';
@@ -372,13 +375,19 @@ char * rtfSource::parseRTFtoken(int level)
         token[index] = 0;
         switch(ch)
             {
+            case 'u':
+                if(position == 0)
+                  {
+                  perhapsUnicode = true;
+                  }
+                break;
             case '-':
             case '*':
             case ':':
             case '_':
             case '|':
             case '~':
-                if(first) // detected symbol
+                if(position == 0) // detected symbol
                     {
 #ifdef LOGGING
                     log(level,0,false);
@@ -397,7 +406,7 @@ char * rtfSource::parseRTFtoken(int level)
                 break;
             case '{':
             case '}':
-                if(first) // detected '{' or '}'
+                if(position == 0) // detected '{' or '}'
                     {
 #ifdef LOGGING
                     log(level,0,false);
@@ -414,7 +423,7 @@ char * rtfSource::parseRTFtoken(int level)
                     return token;
                     }
             case '\\':  // detected '\'
-                if(first)
+                if(position == 0)
                     {
 #ifdef LOGGING
                     log(level,0,false);
@@ -432,7 +441,7 @@ char * rtfSource::parseRTFtoken(int level)
                     }
             case '\'':
                 {
-                if(first)
+                if(position == 0)
                     {
 #ifdef LOGGING
                     int ch;// TODO remove when done with logging
@@ -472,9 +481,44 @@ char * rtfSource::parseRTFtoken(int level)
                     token[--index] = 0;
                 return token;
             default :
+                if(perhapsUnicode)
+                    {
+                    if(ch == '-')
+                        {
+                        if(position == 1)
+                            positive == false;  // \u-12345
+                        else if(!positive)       // \u--
+                            perhapsUnicode = false;
+                        }
+
+                    if(perhapsUnicode)
+                        {
+                        if('0' <= ch && ch <= '9')
+                            {
+                            shortInt = 10 * shortInt + (ch - '0');
+                            if(  ( positive && shortInt > (0xffff / 10))
+                              || (!positive && shortInt > (0x7fff / 10))
+                              )
+                                return token; // Cannot absorb more digits 
+                                // after this one. (I assume that we should
+                                // accept both signed and unsigned short
+                                // integers.)
+                            }
+                        else if(shortInt != 0)    // \u248? The ? must be put back.
+                            {
+                            Ungetc(ch,sourceFile);
+                            token[--index] = 0;
+                            return token;
+                            }
+                        else
+                            {
+                            perhapsUnicode = false;
+                            }
+                        }
+                    }
                 ;
             }
-        first = false;
+        ++position;
         }
     if(  (ch == WEOF || ch == 26 /*20150916*/)
       && level != 0
@@ -807,7 +851,7 @@ void  rtfSource::doTheSegmentation(charprops CharProps,bool newlineAtEndOffset,b
             if(oldnl)
                 {
                 flgs.in_abbreviation = false; // 20150917
-		        flgs.expectCapitalizedWord = false; // 20150917
+                flgs.expectCapitalizedWord = false; // 20150917
                 if(Option.emptyline)
                     {
                     outputtext->PutHandlingLine('\n',flgs);
