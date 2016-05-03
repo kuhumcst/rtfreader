@@ -62,7 +62,7 @@ void readOptsFromFile(char * locoptarg,char * progname,optionStruct & Option,opt
                         {
                         for(char * p = optarg2 + strlen(optarg2) - 1;p >= optarg2;--p)
                             {
-                            if(!isspace(*p))
+                            if(!isspace((unsigned char)*p))
                                 break;
                             *p = '\0';
                             }
@@ -82,7 +82,7 @@ void readOptsFromFile(char * locoptarg,char * progname,optionStruct & Option,opt
                                         {
                                         if(*q == ';')
                                             break;
-                                        if(!isspace(*q))
+                                        if(!isspace((unsigned char)*q))
                                             {
                                             string = false;
                                             }
@@ -167,7 +167,7 @@ void readOptsFromFile(char * locoptarg,char * progname,optionStruct & Option,opt
                         {
                         for(char * p = optarg2 + strlen(optarg2) - 1;p >= optarg2;--p)
                             {
-                            if(!isspace(*p))
+                            if(!isspace((unsigned char)*p))
                                 break;
                             *p = '\0';
                             }
@@ -187,7 +187,7 @@ void readOptsFromFile(char * locoptarg,char * progname,optionStruct & Option,opt
                                         {
                                         if(*q == ';')
                                             break;
-                                        if(!isspace(*q))
+                                        if(!isspace((unsigned char)*q))
                                             {
                                             string = false;
                                             }
