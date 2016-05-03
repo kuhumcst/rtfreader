@@ -1,3 +1,7 @@
+Version: 2.2 (2016.05.03)
+-------------------------
+Typecast char to unsigned char when calling isspace and isUpper.
+
 Version: 2.1 (2016.01.15)
 -------------------------
 Corrected interpretation of unicode characters \uN.
