@@ -38,6 +38,7 @@ class textSource: public charSource
         void copyEOLsequence();
     public:
         textSource(STROEM * sourceFile,paragraph * outputtext);
+        virtual ~textSource(){}
         virtual void doTheSegmentation(charprops CharProps,bool newlineAtEndOffset,bool forceEndOfSegmentAfter);
         virtual bool segment(int level
                     ,int sstatus

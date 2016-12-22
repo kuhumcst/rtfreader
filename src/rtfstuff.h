@@ -46,7 +46,7 @@ class rtfSource: public charSource
 //Any RTF control word or symbol is considered a single character for the purposes of counting skippable characters.
     public:
         rtfSource(STROEM * sourceFile,paragraph * outputtext);
-        ~rtfSource()
+        virtual ~rtfSource()
             {
             delete [] fonttable;
             }

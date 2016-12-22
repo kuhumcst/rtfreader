@@ -15,6 +15,10 @@ RTF is chosen as rich input format because
 **Online availability**
 
 RTFreader is used as segmenter and tokeniser at CST's website
-(http://ada.sc.ku.dk/tools/index.php?lang=en)
-and an integrated webservice in the CLARIN-DK infrastructure
-(https://clarin.dk/).
+(https://cst.dk/tools/index.php?lang=en)
+or
+http://cst.dk:8080/tools/).
+
+**Installing RTFreader on your computer**
+
+RTFreader depends on some other repositories. To clone all necessary repositories and build RTFreader, look at makertfreader.bash in the doc folder. If you are in Linux, you can probably just run this script file.

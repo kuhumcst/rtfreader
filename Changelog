@@ -1,3 +1,8 @@
+Version: 2.3 (2016.12.22)
+-------------------------
+Added newline at end of some header files that hadn't.
+Made destructors virtual in some classes.
+
 Version: 2.2 (2016.05.03)
 -------------------------
 Typecast char to unsigned char when calling isspace and isUpper.

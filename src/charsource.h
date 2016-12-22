@@ -83,6 +83,7 @@ class charSource
             firsttext.b.CR = 0;
             firsttext.b.LS = 1; // Leading space
             }
+        virtual ~charSource(){}
         wint_t getput(int f);
         virtual int Uchar(int f,int c){return c;}
         virtual bool eating(){return false;} 
