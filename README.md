@@ -15,7 +15,7 @@ RTF is chosen as rich input format because
 **Online availability**
 
 RTFreader is used as segmenter and tokeniser at CST's website
-(https://cst.dk/tools/index.php?lang=en)
+(https://cst.dk/tools/index.php?lang=en
 or
 http://cst.dk:8080/tools/).
 
