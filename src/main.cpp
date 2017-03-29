@@ -21,8 +21,8 @@ along with CSTRTFREADER; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#define VERSION "2.3"
-#define DATE "2016.12.22"
+#define VERSION "2.4"
+#define DATE "2017.03.29"
 
 
 #include "data.h"
@@ -401,7 +401,7 @@ int main(int argc,char ** argv)
         char * oname = new char[strlen(Option.argi)+sizeof(extension)];
         sprintf(oname,"%s%s",Option.argi,extension);
         int ret = doit(sourceFile, oname) ? 0 : 1;
-        delete oname;
+        delete [] oname;
         return ret;
         }
     }
