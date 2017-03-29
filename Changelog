@@ -1,3 +1,8 @@
+Version: 2.4 (2017.03.29)
+-------------------------
+Added [] after delete in main.cpp.
+Removed static linked version, because Mac OS X users do not have that option.
+
 Version: 2.3 (2016.12.22)
 -------------------------
 Added newline at end of some header files that hadn't.
