@@ -182,8 +182,8 @@ const bool vowels[256] =
     };
 
 
-wchar_t const SEP[] = L"!\"\'(),./:;?[]`{}\x82\x83\x84\x85\x86\x87\x88\x89\x91\x92\x93\x94\x95\x96\x97\x98\xab\xbb";// Bart 20051207
-wchar_t const QUOTE[] = L"\'`\x91\x92"; // Bart 20090522. Was: L"\'`\x92"
+wchar_t const SEP[] = L"!\"\'(),./:;?[]`{}\x82\x83\x84\x85\x86\x87\x88\x89\x91\x92\x93\x94\x95\x96\x97\x98\xab\xbb\x02B9\x02BA\x02BB\x02BC\x02BD";
+wchar_t const QUOTE[] = L"\'`\x91\x92\x02B9\x02BA\x02BB\x02BC\x02BD";
 wchar_t const QUANTITY[] = L"$%\x80\x83\x89\xA2\xA3\xA5";//dollar, percent, euro, florin, promille, cent, pound, yen 
 wchar_t const RBRACKET[] = L")}]";
 wchar_t const LBRACKET[] = L"({[";

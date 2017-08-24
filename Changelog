@@ -1,5 +1,14 @@
 Version: 2.4 (2017.03.29)
 -------------------------
+Added to list SEP[] and QUOTE[]
+U+02B9 	ʹ 	697 	Modifier Letter Prime
+U+02BA 	ʺ 	698 	Modifier Letter Double Prime
+U+02BB 	ʻ 	699 	Modifier Letter Turned Comma
+U+02BC 	ʼ 	700 	Modifier Letter Apostrophe
+U+02BD 	ʽ 	701 	Modifier Letter Reversed Comma
+
+Version: 2.4 (2017.03.29)
+-------------------------
 Added [] after delete in main.cpp.
 Removed static linked version, because Mac OS X users do not have that option.
 
