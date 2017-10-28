@@ -6,7 +6,8 @@ PNAME=rtfreader$(PG)
 VERSION=2
 MINOR_NUMBER=1
 
-BIN=/usr/local/bin/
+#BIN=/usr/local/bin/
+BIN=../
 
 LIB=
 

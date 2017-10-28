@@ -14,11 +14,13 @@ RTF is chosen as rich input format because
 
 **Online availability**
 
-RTFreader is used as segmenter and tokeniser at CST's website
+RTFreader is used as segmenter and tokeniser in CST's online toolboxes
 (https://cst.dk/tools/index.php?lang=en
-or
-http://cst.dk:8080/tools/).
+and
+http://cst.dk/WMS/).
 
 **Installing RTFreader on your computer**
 
-RTFreader depends on some other repositories. To clone all necessary repositories and build RTFreader, look at makertfreader.bash in the doc folder. If you are in Linux, you can probably just run this script file.
+RTFreader depends on some other repositories. To clone all necessary repositories and build RTFreader, look at makertfreader.bash in the doc folder. If you are in Linux, you can probably just run this script file. 
+
+The Makefile in the src directory creates the executable in the rtfreader folder.
