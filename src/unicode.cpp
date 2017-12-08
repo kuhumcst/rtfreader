@@ -421,7 +421,7 @@ static bool is_UTF8(FILE * fi)
     rewind(fi);
     if(fgetc(fi) == 0xEF && fgetc(fi) == 0xBB && fgetc(fi) == 0xBF) // BOM found
         {
-        UTF8start = 3; // used to rewind UTF8 file after BOM
+        UTF8start = 3; // used to rewind UTF-8 file after BOM
         ascii = false;
         }
     else

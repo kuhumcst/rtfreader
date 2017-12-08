@@ -121,7 +121,7 @@ static void doSwitch(int c,char * locoptarg,char * progname,optionStruct & Optio
             printf("    -x-             Input is RTF.\n");
             printf("    -x+             Input is RTF or plain text. Let the program find out. (default)\n");
             printf("    -XML            Parse as XML: processor instructions end with ?> (default off).\n");
-            printf("    -E<encoding>    Force output encoding: UTF8, ISO or UTF16 (default: same encoding as input if text, UTF8 if RTF)\n");
+            printf("    -E<encoding>    Force output encoding: UTF-8, ISO or UTF-16 (default: same encoding as input if text, UTF-8 if RTF)\n");
             exit(0);
             break;
 /*
