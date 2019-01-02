@@ -118,7 +118,7 @@ wint_t charSource::getput(int f)
     if(flgs.htmltagcoming)
         {
         if(Option.tokenize)
-            outputtext->PutHandlingLine(' ',flgs);
+            outputtext->PutHandlingLine(Option.tokenSplit,flgs);
         flgs.inhtmltag = true;
         flgs.firstofhtmltag = true;
         flgs.htmltagcoming = false;

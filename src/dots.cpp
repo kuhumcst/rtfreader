@@ -86,7 +86,7 @@ void dots::Put3(STROEM * file,wint_t ch,flags & flgs) // called from PutN, Put2 
             if(trailingDotFollowingNumber)
                 {
                 if(Option.tokenize)
-                    pRegularizationFnc(file,' ',flgs); // insert blank before dot if number followed by dot is at the end of the line
+                    pRegularizationFnc(file, Option.tokenSplit,flgs); // insert blank before dot if number followed by dot is at the end of the line
                 pRegularizationFnc(file,'.',flgs);
                 trailingDotFollowingNumber = false;
                 flgs.in_abbreviation = false;
@@ -103,7 +103,7 @@ void dots::Put3(STROEM * file,wint_t ch,flags & flgs) // called from PutN, Put2 
                     //            ^ Not written from here
                     {// Regard dot as sentence delimiter after all
                     if(Option.tokenize)
-                        pRegularizationFnc(file,' ',flgs); // Insert blank before dot if number followed by dot is followed by capitalised word.
+                        pRegularizationFnc(file, Option.tokenSplit,flgs); // Insert blank before dot if number followed by dot is followed by capitalised word.
                     pRegularizationFnc(file,'.',flgs);
                     trailingDotFollowingNumber = false;
                     lastToWrite = '\n'; // Number seems to be the last word of the previous sentence. Fake history.

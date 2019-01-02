@@ -21,8 +21,8 @@ along with CSTRTFREADER; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#define VERSION "2.5"
-#define DATE "2017.08.24"
+#define VERSION "2.6"
+#define DATE "2019.01.02"
 
 
 #include "data.h"
@@ -39,7 +39,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include <stdlib.h>
 #include <string.h>
 
-static const char opts[] = "?@:A:a:b:B:e:E:hH:i:m:n:P:r:s:t:T:vw:x:X:";
+static const char opts[] = "?@:A:a:b:B:D:e:E:hH:i:m:n:P:r:s:t:T:vw:x:X:";
 
 
 static void doSwitch(int c,char * locoptarg,char * progname,optionStruct & Option)
@@ -97,6 +97,8 @@ static void doSwitch(int c,char * locoptarg,char * progname,optionStruct & Optio
             printf("    -B              Suppress bullets.\n");
             printf("    -b              Put bullets on separate lines.\n");
             printf("    -b-             Do not put bullets on separate lines. (default)\n");
+            printf("    -D              Insert chr(127) DEL to separate tokens where no space is present in input.\n");
+            printf("    -D-             Insert chr(32) SPACE to separate tokens where no space is present in input. (default)\n");
             printf("    -e              Insert empty line after line not ending with punctuation.\n");
             printf("    -e-             Do not output empty lines. (default)\n");
             printf("    -H              Keep html-tags (As tokens, if -T or -P is specified.) (Flat text input only). (default)\n");
@@ -128,6 +130,9 @@ static void doSwitch(int c,char * locoptarg,char * progname,optionStruct & Optio
 -P -b -y -e- -B -A  
 -T -b -y -e -s 
 */
+        case 'D':
+            Option.tokenSplit = (locoptarg && *locoptarg == '-') ? ' ' : 127;
+            break;
         case 'e':
             Option.Emptyline = !(locoptarg && *locoptarg == '-');
             break;

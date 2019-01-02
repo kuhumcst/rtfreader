@@ -77,7 +77,7 @@ bool doit(STROEM * sourceFile,const char * argt)
     targetFile = fopen(argt,"wb");
     if(!targetFile)
         {
-        fprintf(stderr,"cstrtfreader: Error in opening output file %s\n",Option.argt);
+        fprintf(stderr,"cstrtfreader: Error in opening output file %s\n",argt);
         fclose(sourceFile); // Option.argi
         return 1;
         }

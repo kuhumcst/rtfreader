@@ -50,7 +50,8 @@ struct optionStruct
     int x;                    // -x              Input is plain text.
                               // -x-             Input is RTF.
                               // -x+             Input is RTF or plain text. Let the program find out.
-
+    char tokenSplit;          // -D              127 (DEL)
+                              // -D-             ' ' (space) (default)
     bool PennTreebankTokenization;
                               // -P              Tokenize output text file according to Penn Treebank rules.
                               // -P-             Do not tokenize output text. (same as -T-).

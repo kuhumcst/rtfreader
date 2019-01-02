@@ -36,7 +36,7 @@ static void Shift(wchar_t *end,int save,wchar_t buf2[256],int offset)
     *(e+1) = '\0';
     for(;e > buf2 + offset;--e)
         *e = *(e - 1);
-    *e = ' ';
+    *e = Option.tokenSplit;
     }
 
 
@@ -70,7 +70,7 @@ void segment::PennTreebankTokenize(STROEM * file, wchar_t buf[],size_t lastNonSe
     size_t len = wcslen(buf2);
     if(buf2[len - 1] == '\'')
         {
-        buf2[len - 1] = ' ';
+        buf2[len - 1] = Option.tokenSplit;
         buf2[len] = '\'';
         buf2[len + 1] = '\0';
         len--;
@@ -110,9 +110,9 @@ void segment::PennTreebankTokenize(STROEM * file, wchar_t buf[],size_t lastNonSe
         *(e+1) = '\0';
         for(;e > buf2 + len - shift;--e)
             *e = *(e - 1);
-        *e = ' ';
+        *e = Option.tokenSplit;
         }
-    wchar_t * end = wcschr(buf2,' ');
+    wchar_t * end = wcschr(buf2, Option.tokenSplit);
     if(end)
         {
         save = *end;
@@ -222,7 +222,7 @@ static size_t addToBuffer(wint_t ch,flags & flgs,wchar_t * bufr,size_t pos)
         flgs.firstafterhtmltag = false;
         if(Option.tokenize && !Option.suppressHTML)
             {
-            bufr[pos++] = ' ';
+            bufr[pos++] = Option.tokenSplit;
             }
         }
     bufr[pos++] = ch;
@@ -390,7 +390,7 @@ wint_t segment::bracketsDotsEntitiesInitialsAbbreviations(STROEM * file,flags & 
             {
             Dots.Put3(file,*aa,flgs);
             if(Option.tokenize)
-                Dots.Put3(file,' ',flgs);
+                Dots.Put3(file, Option.tokenSplit,flgs);
             }
 
         bool abbreviation = false;
@@ -508,7 +508,7 @@ wint_t segment::bracketsDotsEntitiesInitialsAbbreviations(STROEM * file,flags & 
         for(;SeparatingCharacter < nullbyte;++SeparatingCharacter)
             {
             if(Option.tokenize)
-                Dots.Put3(file,' ',flgs);
+                Dots.Put3(file, Option.tokenSplit,flgs);
             wchar_t kar = *SeparatingCharacter;
             for(;;)
                 {
@@ -642,7 +642,7 @@ void segment::Put(STROEM * file,wchar_t ch,flags & flgs) // Called from GetPutBu
             {
             if(Option.tokenize && !Option.suppressHTML && notstartofline)
                 {
-                bufr[pos++] = ' ';
+                bufr[pos++] = Option.tokenSplit;
                 }
             flgs.firstofhtmltag = false;
             }

@@ -1,4 +1,12 @@
-Version: 2.4 (2017.10.28)
+Version: 2.6 (2019.01.02)
+-------------------------
+Option -D inserts ASCII 127 (DEL) in place of the default ASCII 32 (space) to
+separate tokens that are not already separated in the input, for example
+between the last word in a sentence and the full stop, or between 'got' and
+'ta' if the input is the English word 'gotta'. This option makes it possible to
+go back to an untokenized, but still segmentized, version of the text.
+
+Version: 2.5 (2017.10.28)
 -------------------------
 Makefile: now creates the executable in the rtfeader folder, not /usr/local/bin. 
 README.md: Updated link to workflow manager. 
