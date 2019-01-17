@@ -1,3 +1,7 @@
+Version: 2.7 (2019.01.19)
+-------------------------
+Initialise optionStruct::tokenSplit with ' '.
+
 Version: 2.6 (2019.01.02)
 -------------------------
 Option -D inserts ASCII 127 (DEL) in place of the default ASCII 32 (space) to

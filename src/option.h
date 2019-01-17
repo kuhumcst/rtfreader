@@ -126,6 +126,7 @@ aap <?php >? ?> noot .
         B = false;
         x = '+';
         //y = false;
+        tokenSplit = ' ';
         PennTreebankTokenization = false;
         spaceAtEndOfLine = false;
         suppressHTML = false;
