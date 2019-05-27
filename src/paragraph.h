@@ -44,17 +44,19 @@ class paragraph
         int waited;
         size_t Index;
         wchar_t Line[256];
-        wchar_t circularBuffer[256];
+        wchar_t BufferForHandlingEndOfLineHyphens[256]; /* Receives characters
+            after segment::bufr, but not all characters received by
+            paragraph::BufferForHandlingEndOfLineHyphens have passed through segment::bufr */
         const size_t ind(int i) const
             {
-            i = i % (sizeof(circularBuffer)/sizeof(circularBuffer[0]));
+            i = i % (sizeof(BufferForHandlingEndOfLineHyphens)/sizeof(BufferForHandlingEndOfLineHyphens[0]));
             if(i < 0)
-                i += (sizeof(circularBuffer)/sizeof(circularBuffer[0]));
+                i += (sizeof(BufferForHandlingEndOfLineHyphens)/sizeof(BufferForHandlingEndOfLineHyphens[0]));
             return (size_t)i;
             }
         const size_t inc(size_t i) const
             {
-            if(i == (sizeof(circularBuffer)/sizeof(circularBuffer[0])) - 1)
+            if(i == (sizeof(BufferForHandlingEndOfLineHyphens)/sizeof(BufferForHandlingEndOfLineHyphens[0])) - 1)
                 return 0;
             else
                 return i + 1;
@@ -62,7 +64,7 @@ class paragraph
         const size_t dec(size_t i) const
             {
             if(i == 0)
-                return (sizeof(circularBuffer)/sizeof(circularBuffer[0])) - 1;
+                return (sizeof(BufferForHandlingEndOfLineHyphens)/sizeof(BufferForHandlingEndOfLineHyphens[0])) - 1;
             else
                 return i - 1;
             }

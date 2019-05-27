@@ -118,10 +118,11 @@ wint_t charSource::getput(int f)
     if(flgs.htmltagcoming)
         {
         if(Option.tokenize)
-            outputtext->PutHandlingLine(Option.tokenSplit,flgs);
+            outputtext->flushLine(Option.tokenSplit, flgs);
+//            outputtext->PutHandlingLine(Option.tokenSplit,flgs);
         flgs.inhtmltag = true;
         flgs.firstofhtmltag = true;
-        flgs.htmltagcoming = false;
+        flgs.htmltagcoming = 0;
         }
     if(Ftell(sourceFile) < end_offset)
         {

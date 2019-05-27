@@ -612,7 +612,7 @@ character is lower case.
         }
     else 
         {
-        lastCharIsSemipunct = isSemiPunct(ch);
+        lastCharIsSemipunct = isCommaOrColon(ch);
         if(!isLower(ch))
             {
             if(wordComing)
@@ -709,7 +709,8 @@ bool textSource::segment(int level
                 }
             // Check whether a well-formed HTML tag is ahead. Returns sourceFile
             // in same file position.
-            flgs.htmltagcoming = isHTMLtagComing(ch);
+            if(isHTMLtagComing(ch))
+                flgs.htmltagcoming = curr_pos+1;
 //            assert(new_pos == Ftell(sourceFile));
             assert(end_offset == Ftell(sourceFile));
             }
@@ -717,7 +718,7 @@ bool textSource::segment(int level
             {
             // We are leaving an HTML-tag and entering a new one.
             flgs.inhtmltag = true;
-            flgs.htmltagcoming = false;
+            flgs.htmltagcoming = 0;
             }
         /* Scan in advance, checking whether the line to come is a heading and 
         therefore must be preceded with a newline (WritePar will then be set to 

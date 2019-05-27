@@ -248,10 +248,10 @@ extern bool isFlatSpace(int s);
 
 #if COLONISSENTENCEDELIMITER
 #define isPunct(s) (s == ';' || s == '?' || s == '.' || s == '!' || s == ':')
-#define isSemiPunct(s) (s == ',')
+#define isCommaOrColon(s) (s == ',')
 #else
 #define isPunct(s) (s == ';' || s == '?' || s == '.' || s == '!')
-#define isSemiPunct(s) (s == ',' || s == ':')
+#define isCommaOrColon(s) (s == ',' || s == ':')
 #endif
 #define isSentencePunct(s) (s == '?' || s == '.' || s == '!')
 #define isDigit(s) ('0' <= (s) && (s) <= '9')

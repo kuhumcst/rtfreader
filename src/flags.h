@@ -31,7 +31,6 @@ struct flags
     {
     bool in_abbreviation:1;
     bool expectCapitalizedWord:1; // 20110224
-    bool htmltagcoming:1;
     bool firstofhtmltag:1;
     bool writtentoline:1;
     bool inhtmltag:1;
@@ -42,6 +41,7 @@ struct flags
     bool in_fileName:1;
     //bool certainSentenceEndMarker:1; // Set to false if period found and it might be part of abbreviation in gazetteer
     //bool previousWasFlatSpace:1; // regularizeWhiteSpace
+    size_t htmltagcoming;
     int punctuationFound;
     int semiPunctuationFound;
     int hyphenFound;
@@ -72,7 +72,7 @@ struct flags
         {
         in_abbreviation = false;
         expectCapitalizedWord = false;
-        htmltagcoming = false;
+        htmltagcoming = 0;
         firstofhtmltag = false;
         writtentoline = false;
         inhtmltag = false;

@@ -726,7 +726,7 @@ void segment::Put(STROEM * file,wchar_t ch,flags & flgs) // Called from GetPutBu
                 neededSegmentDelimiters = 1;
             }
 
-        if(flgs.htmltagcoming || wcschr(L" \t",ch) || ch == 0)
+        if(flgs.htmltagcoming == pos+1 || wcschr(L" \t",ch) || ch == 0)
             {
             lookWhatsInTheBuffer(file,ch,flgs);
             }

@@ -34,10 +34,42 @@ void paragraph::hyphenate(flags & flgs)
     Segment.Put(file,'-',flgs);
     Segment.Put(file,'\n',flgs);
     for(int j = 0;j != waited;++j)
-        Segment.Put(file,circularBuffer[j],flgs);
+        Segment.Put(file,BufferForHandlingEndOfLineHyphens[j],flgs);
     }
 
 void paragraph::considerHyphenation(flags & flgs)
+/*
+Requires option -w-
+
+Drop hyphen:
+ab-
+ces
+-> abces    Same case before and after hyphen
+
+AB-
+CES
+-> ABCES    Same case before and after hyphen
+
+Don't drop hyphen
+ab-
+Ces
+-> ab-Ces  Not all lowercase after hyphen
+
+AB-
+Ces
+-> AB-Ces  Not all uppercase after hyphen
+
+b-
+ces
+-> b-ces   No vowel before hyphen
+
+ab-ces
+-> ab-ces  Hyphen not at end of line
+
+ab- ces
+-> ab- ces  Hyphen not at end of line
+
+*/
     {
     bool vowel = false;
     bool nonAlphaFound = false;
@@ -46,12 +78,12 @@ void paragraph::considerHyphenation(flags & flgs)
     int punkpos = -1;
     bool locAllLower = true;
     bool locAllUpper = true;
-    for(j = 0;j != waited && isFlatSpace(circularBuffer[j]);++j)
-        circularBuffer[j] = ' ';
+    for(j = 0;j != waited && isFlatSpace(BufferForHandlingEndOfLineHyphens[j]);++j) // '\t' || ' ' || 0xA0 || 0x3000
+        BufferForHandlingEndOfLineHyphens[j] = ' ';
     for(;j != waited;++j)
         {
         ++cnt;
-        int k = circularBuffer[j];
+        int k = BufferForHandlingEndOfLineHyphens[j];
         if(isAlpha(k))
             {
             if(!isLower(k))
@@ -63,7 +95,7 @@ void paragraph::considerHyphenation(flags & flgs)
             {
             if(punkpos < 0 && isPunct(k))
                 punkpos = cnt;
-            else if(!isSemiPunct(k))
+            else if(!isCommaOrColon(k))
                 nonAlphaFound = true;
             break;
             }
@@ -88,7 +120,7 @@ void paragraph::considerHyphenation(flags & flgs)
         if(!dropHyphen || !vowel)
             Segment.Put(file,'-',flgs);
         for(j = 0;j != waited;++j)
-            Segment.Put(file,circularBuffer[j],flgs);
+            Segment.Put(file,BufferForHandlingEndOfLineHyphens[j],flgs);
         }
     else
         hyphenate(flgs);
@@ -112,7 +144,7 @@ void paragraph::PutHandlingWordWrap(const wint_t ch,flags & flgs) // Called from
             {
             ++flgs.punctuationFound;
             }
-        else if(isSemiPunct(ch))
+        else if(isCommaOrColon(ch))
             {
             ++flgs.semiPunctuationFound;
             }
@@ -147,7 +179,7 @@ void paragraph::PutHandlingWordWrap(const wint_t ch,flags & flgs) // Called from
                     // skip previous spaces
                     for( i = ind(lastWordIndex-1)
                        ;    i != lastWordIndex 
-                         && isSpace(circularBuffer[ind(i)])
+                         && isSpace(BufferForHandlingEndOfLineHyphens[ind(i)])
                        ; i = dec(i)
                        )
                         ;
@@ -164,7 +196,7 @@ void paragraph::PutHandlingWordWrap(const wint_t ch,flags & flgs) // Called from
 
                     for (
                         ;    i != lastWordIndex 
-                          && ( k = circularBuffer[ind(i)]
+                          && ( k = BufferForHandlingEndOfLineHyphens[ind(i)]
                              , !isSpace(k)
                              )
                         ; i = dec(i)
@@ -196,7 +228,7 @@ void paragraph::PutHandlingWordWrap(const wint_t ch,flags & flgs) // Called from
                         {
                         /**/
                         lastWordIndex = 0;
-                        wait = (sizeof(circularBuffer)/sizeof(circularBuffer[0]));
+                        wait = (sizeof(BufferForHandlingEndOfLineHyphens)/sizeof(BufferForHandlingEndOfLineHyphens[0]));
                         waited = 0;
                         }
                     break;
@@ -234,7 +266,7 @@ void paragraph::PutHandlingWordWrap(const wint_t ch,flags & flgs) // Called from
                         }
                     else
                         {
-                        circularBuffer[waited++] = (wchar_t)ch;
+                        BufferForHandlingEndOfLineHyphens[waited++] = (wchar_t)ch;
                         }
                     }
                 else if(waited > 0)
@@ -260,7 +292,7 @@ void paragraph::PutHandlingWordWrap(const wint_t ch,flags & flgs) // Called from
         if(ch != '\n' && !isSentencePunct(ch) && !wait)
             flgs.punctuationFound = 0;
 
-        if(ch != '\n' && !isSemiPunct(ch) && !wait)
+        if(ch != '\n' && !isCommaOrColon(ch) && !wait)
             flgs.semiPunctuationFound = 0;
 
         if(ch != '\n' && ch != '-' && flgs.hyphenFound && !wait) // A-bomb
@@ -284,10 +316,10 @@ void paragraph::PutHandlingWordWrap(const wint_t ch,flags & flgs) // Called from
     if(!wait)
         {
         if(  !isFlatSpace(ch) 
-          || !isFlatSpace(circularBuffer[ind(lastWordIndex-1)])
+          || !isFlatSpace(BufferForHandlingEndOfLineHyphens[ind(lastWordIndex-1)])
           )
             {
-            circularBuffer[lastWordIndex] = (wchar_t)ch;
+            BufferForHandlingEndOfLineHyphens[lastWordIndex] = (wchar_t)ch;
             lastWordIndex = inc(lastWordIndex);
             }
         }
