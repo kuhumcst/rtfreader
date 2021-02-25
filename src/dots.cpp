@@ -120,7 +120,7 @@ void dots::Put3(STROEM * file,wint_t ch,flags & flgs) // called from PutN, Put2 
                             break;
                         case not_a_name:
                         default: // Skema 1. Affald fra husholdninger --> Skema 1. | Affald fra husholdninger       20040420
-                            if(!flgs.expectCapitalizedWord)
+                            if(flgs.expectCapitalizedWord)
                                 lastToWrite = '\n'; // Abbreviation seems to be the last word of the previous sentence
                             break;
                         }
