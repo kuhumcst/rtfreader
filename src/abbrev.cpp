@@ -33,7 +33,11 @@ static int abbrcnt = 0;
 static size_t * abblen;
 static bool * Xtra = 0;
 
-
+/* 20210225 
+expectCapitalizedWord == true now means: this abbrevation is most likely at
+the end of a sentence, so take its final period to also indicate the end of
+the sentence, provided that the next word does not start with a lowercase
+letter. */
 bool Abbreviation(const wchar_t * abbr, bool & expectCapitalizedWord)
     {
     int f;
