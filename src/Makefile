@@ -4,7 +4,7 @@ PG=
 
 PNAME=rtfreader$(PG)
 VERSION=2
-MINOR_NUMBER=1
+MINOR_NUMBER=9
 
 #BIN=/usr/local/bin/
 BIN=../
