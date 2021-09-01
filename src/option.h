@@ -33,6 +33,8 @@ struct optionStruct
     {
     bool Emptyline;           // -e              Insert empty line after line not ending with punctuation.
                               // -e-             Do not output empty lines.
+    bool EmptylineAfterEOL;   // -p              Insert empty line after line.
+                              // -p-             Do not output empty lines. (default)
     bool emptyline;           // (always true)
     bool tokenize;            // -T              Tokenize output text file.
                               // -T-             Do not tokenize output text file. (same as -P-).
@@ -114,6 +116,7 @@ aap <?php >? ?> noot .
         {
         tokenize = false;
         Emptyline = false;
+        EmptylineAfterEOL = false;
         emptyline = true;
         separateBullets = false;
         arga = NULL;

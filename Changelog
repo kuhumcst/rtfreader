@@ -1,3 +1,8 @@
+Version: 2.9 (2021.09.01)
+-------------------------
+Added option -p. Output an empty line if a segment in the input ends where the
+line ends. Can be used to retain information about paragraphs.
+
 Version: 2.8 (2019.05.27)
 -------------------------
 Improved handling of XML(-like) tags. Previously, text preceding a 'tag'

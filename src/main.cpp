@@ -21,8 +21,8 @@ along with CSTRTFREADER; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#define VERSION "2.8"
-#define DATE "2019.05.27"
+#define VERSION "2.9"
+#define DATE "2021.09.01"
 
 
 #include "data.h"
@@ -39,7 +39,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include <stdlib.h>
 #include <string.h>
 
-static const char opts[] = "?@:A:a:b:B:D:e:E:hH:i:m:n:P:r:s:t:T:vw:x:X:";
+static const char opts[] = "?@:A:a:b:B:D:e:E:hH:i:m:n:p:P:r:s:t:T:vw:x:X:";
 
 
 static void doSwitch(int c,char * locoptarg,char * progname,optionStruct & Option)
@@ -108,6 +108,8 @@ static void doSwitch(int c,char * locoptarg,char * progname,optionStruct & Optio
             printf("    -m<mwu>         Text file with multi-word-units\n");
             printf("    -n              Keep noise. (default)\n");
             printf("    -n-             Suppress noise caused by suboptimal ocr.\n");
+            printf("    -p              Insert empty line after line.\n");
+            printf("    -p-             Do not output empty lines. (default)\n");
             printf("    -P              Tokenize output text file according to Penn Treebank rules.\n");
             printf("    -P-             Do not tokenize output text. (same as -T-). (default)\n");
             printf("    -r              Use same EOL-sequence as input, i.e. if input is DOS, output is DOS, etc.\n");
@@ -135,6 +137,9 @@ static void doSwitch(int c,char * locoptarg,char * progname,optionStruct & Optio
             break;
         case 'e':
             Option.Emptyline = !(locoptarg && *locoptarg == '-');
+            break;
+        case 'p':
+            Option.EmptylineAfterEOL = !(locoptarg && *locoptarg == '-');
             break;
         case 'E':
             if(locoptarg)
