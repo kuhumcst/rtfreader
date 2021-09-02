@@ -328,10 +328,11 @@ void paragraph::PutHandlingWordWrap(const wint_t ch,flags & flgs) // Called from
 
 void paragraph::flushLine(wint_t ch,flags & flgs)
     {
-    int lastNonSpace;
-    for (lastNonSpace = Index - 1; lastNonSpace >= 0 && isFlatSpace(Line[lastNonSpace]); --lastNonSpace)
-        {        
-        }
+    size_t lastNonSpace;
+    if(Index > 0)
+        for (lastNonSpace = Index - 1; lastNonSpace != 0 && isFlatSpace(Line[lastNonSpace]); --lastNonSpace)
+            {        
+            }
     if(  flgs.inhtmltag
       || !Option.suppressNoise 
       || textBadness(Line,Index) < 0.44
