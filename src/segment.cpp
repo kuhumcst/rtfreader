@@ -265,7 +265,7 @@ wint_t segment::bracketsDotsEntitiesInitialsAbbreviations(STROEM * file,flags & 
     bool rquote = false;
     wchar_t * rbracket = NULL;
 
-    flgs.spacebetweensegments = (ch_loc == ' ');
+    flgs.nextSegmentIsInSameParagraph = (ch_loc == ' ') && flgs.nonWhiteSpaceAhead;
     // Find left quote while scanning separating characters from the beginning of the string.
     for(firstNonSeparatingCharacter = pbuf;*firstNonSeparatingCharacter && isSep(*firstNonSeparatingCharacter);++firstNonSeparatingCharacter)
         {

@@ -36,7 +36,8 @@ struct flags
     bool inhtmltag:1;
     bool firstafterhtmltag:1;
     bool bbullet:1;
-    bool spacebetweensegments : 1;
+    bool nextSegmentIsInSameParagraph : 1;
+    bool nonWhiteSpaceAhead : 1;
     PersonName person_name:2;
     int number_final_dot:2;
     bool in_fileName:1;
@@ -79,7 +80,8 @@ struct flags
         inhtmltag = false;
         firstafterhtmltag = false;
         bbullet = false;
-        spacebetweensegments = false;
+        nextSegmentIsInSameParagraph = false;
+        nonWhiteSpaceAhead = false;
         person_name = not_a_name;
         number_final_dot = 0;
         in_fileName = false;

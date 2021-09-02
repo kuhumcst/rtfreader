@@ -128,8 +128,9 @@ ab- ces
 
 void paragraph::append(wchar_t ch)
     {
-    assert(Index < sizeof(Line)/sizeof(Line[0]));
+    assert(Index < -1+sizeof(Line)/sizeof(Line[0]));
     Line[Index++] = ch;
+    Line[Index] = 0;
     }
 
 void paragraph::PutHandlingWordWrap(const wint_t ch,flags & flgs) // Called from GetPut, GetPutBullet and doTheSegmentation
@@ -326,7 +327,11 @@ void paragraph::PutHandlingWordWrap(const wint_t ch,flags & flgs) // Called from
     }
 
 void paragraph::flushLine(wint_t ch,flags & flgs)
-    {                                                            
+    {
+    int lastNonSpace;
+    for (lastNonSpace = Index - 1; lastNonSpace >= 0 && isFlatSpace(Line[lastNonSpace]); --lastNonSpace)
+        {        
+        }
     if(  flgs.inhtmltag
       || !Option.suppressNoise 
       || textBadness(Line,Index) < 0.44
@@ -337,8 +342,10 @@ void paragraph::flushLine(wint_t ch,flags & flgs)
             append(MindTheSpace);
             MindTheSpace = 0;
             }
+        /* Process all characters in Line[] */
         for(size_t i = 0;i < Index;++i)
             {
+            flgs.nonWhiteSpaceAhead = (i < lastNonSpace);
             PutHandlingWordWrap(Line[i],flgs);        
             }
         PutHandlingWordWrap(ch,flgs); // //

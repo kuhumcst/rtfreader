@@ -49,7 +49,7 @@ void regularizeWhiteSpace(STROEM * file,wint_t c,flags & flgs) // Called from Pu
                     Fputc(' ',file);// Add extra space before new line (compatibility mode).
                 flgs.writtentoline = false;
                 int reps = 1;
-                if((Option.EmptylineAfterEOL && !flgs.spacebetweensegments) || (Option.Emptyline && !isPunct(previousCharacter)))
+                if((Option.EmptylineAfterEOL && !flgs.nextSegmentIsInSameParagraph) || (Option.Emptyline && !isPunct(previousCharacter)))
                     reps = 2;
                 for(int i = 0;i < reps;++i)
                     {

@@ -1,3 +1,9 @@
+Version: 2.9.1 (2021.09.02)
+---------------------------
+Fixed: lines with trailing spaces confused the determination whether two
+segments belonged to the same paragraph or not. What was needed was a look-
+ahead to see whether a non-space would follow a given space character.
+
 Version: 2.9 (2021.09.01)
 -------------------------
 Added option -p. Output an empty line if a segment in the input ends where the
