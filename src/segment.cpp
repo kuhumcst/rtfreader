@@ -312,10 +312,14 @@ wint_t segment::bracketsDotsEntitiesInitialsAbbreviations(STROEM * file,flags & 
         }
 
     bool URL = false;
+    
     // If a separating character (not a dot) occurs inside a word, then it is also accepted as part of the word if it also is at the end of the word.
     // TODO: same for pairs such as brackets
     bool extended = false;
-    for(b2 = nullbyte; !extended && --b2 > lastNonSeparatingCharacter && *b2 != '.';)
+    b2 = nullbyte;
+    if (b2[-1] == '.' && b2 - 1 > lastNonSeparatingCharacter)
+        --b2;
+    for(; !extended && --b2 > lastNonSeparatingCharacter && *b2 != '.';)
         {
         for(a2 = firstNonSeparatingCharacter;a2 < lastNonSeparatingCharacter;++a2)
             if(*a2 == *b2)
@@ -402,6 +406,9 @@ wint_t segment::bracketsDotsEntitiesInitialsAbbreviations(STROEM * file,flags & 
         // Check also whether there is reason to think that the string is an abbreviation or(/and) a number.
         if(URL)
             {
+            if (!flgs.expectCapitalizedWord)
+                flgs.expectCapitalizedWord = true;
+            // A URL can be the last token in a sentence, just like "etc."
             for(;aa <= lastNonSeparatingCharacter;++aa)
                 {
                 Dots.Put3(file,*aa,flgs);

@@ -53,7 +53,7 @@ void dots::Put3(STROEM * file,wint_t ch,flags & flgs) // called from PutN, Put2 
                     }
                 else 
                     {
-                    if(isFlatSpace(last))// last == ' ' ||  last == 0xA0 || last == 0x3000)
+                    if(isFlatSpace(last))// last == '\t' || last == ' ' ||  last == 0xA0 || last == 0x3000)
                         {
                         pRegularizationFnc(file,' ',flgs);
                         }

@@ -43,8 +43,8 @@ class paragraph
         int lastWordIndex;
         int waited;
         size_t Index;
-        wchar_t Line[256];
-        wchar_t BufferForHandlingEndOfLineHyphens[256]; /* Receives characters
+        wchar_t Line[8192];
+        wchar_t BufferForHandlingEndOfLineHyphens[8192]; /* Receives characters
             after segment::bufr, but not all characters received by
             paragraph::BufferForHandlingEndOfLineHyphens have passed through segment::bufr */
         const size_t ind(int i) const

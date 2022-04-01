@@ -28,6 +28,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "letterfunc.h"
 #include "ocrtidy.h"
 #include <assert.h>
+#include <limits.h>
 
 void paragraph::hyphenate(flags & flgs)
     {
@@ -328,7 +329,7 @@ void paragraph::PutHandlingWordWrap(const wint_t ch,flags & flgs) // Called from
 
 void paragraph::flushLine(wint_t ch,flags & flgs)
     {
-    size_t lastNonSpace;
+    size_t lastNonSpace = SIZE_MAX;
     if(Index > 0)
         for (lastNonSpace = Index - 1; lastNonSpace != 0 && isFlatSpace(Line[lastNonSpace]); --lastNonSpace)
             {        
@@ -340,7 +341,9 @@ void paragraph::flushLine(wint_t ch,flags & flgs)
         {
         if(MindTheSpace != 0 /*&& ch != flgs.MindTheSpace*/)
             {
-            append(MindTheSpace);
+            append(MindTheSpace); // This increments Index
+            if (lastNonSpace > Index) // SIZE_MAX
+                lastNonSpace = Index - 1;
             MindTheSpace = 0;
             }
         /* Process all characters in Line[] */
@@ -400,7 +403,6 @@ void paragraph::PutHandlingLine(wint_t ch,flags & flgs) // Called from GetPut, G
                         append(MindTheSpace);
                         }
                     MindTheSpace = ' ';//ch;
-                    //Line[Index++] = ch;
                     }
                 else if(MindTheSpace != 0)
                     {
