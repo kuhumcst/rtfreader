@@ -43,6 +43,7 @@ class paragraph
         int lastWordIndex;
         int waited;
         size_t Index;
+        // The size of Line and BufferForHandlingEndOfLineHyphens tells how sickening long a token can get.
         wchar_t Line[8192];
         wchar_t BufferForHandlingEndOfLineHyphens[8192]; /* Receives characters
             after segment::bufr, but not all characters received by
@@ -81,7 +82,7 @@ class paragraph
         void PutHandlingLine(wint_t ch,flags & flgs); // Called from GetPut, GetPutBullet and doTheSegmentation
         paragraph(STROEM * target):MindTheSpace(0),lastEOLchar(0),last('\n'),
             wait(0),spaceAfterHyphen(false),dropHyphen(false),allLower(false),
-            allUpper(false),lastWordIndex(0),waited(0),Index(0),file(target){}
+            allUpper(false), lastWordIndex(0), waited(0), Index(0), file(target), Line{ 0 }, BufferForHandlingEndOfLineHyphens{ 0 } {}
     };
 
 #endif

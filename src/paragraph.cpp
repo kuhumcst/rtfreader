@@ -130,8 +130,13 @@ ab- ces
 void paragraph::append(wchar_t ch)
     {
     assert(Index < -1+sizeof(Line)/sizeof(Line[0]));
-    Line[Index++] = ch;
-    Line[Index] = 0;
+    if (Index < -1 + sizeof(Line) / sizeof(Line[0]))
+        {
+        Line[Index++] = ch;
+        Line[Index] = 0;
+        }
+    else
+        ;// We lose characters!
     }
 
 void paragraph::PutHandlingWordWrap(const wint_t ch,flags & flgs) // Called from GetPut, GetPutBullet and doTheSegmentation
