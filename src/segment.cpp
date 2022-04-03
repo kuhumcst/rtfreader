@@ -726,7 +726,7 @@ void segment::Put(STROEM * file,wchar_t ch,flags & flgs) // Called from GetPutBu
         }
     else
         {
-        if(!isFlatSpace(ch))// ch != ' ' && ch != '\t' && ch != 0xA0)
+        if(!isFlatSpace(ch))
             {
             if(Option.emptyline)
                 neededSegmentDelimiters = 2;
@@ -743,7 +743,7 @@ void segment::Put(STROEM * file,wchar_t ch,flags & flgs) // Called from GetPutBu
             pos = addToBuffer(ch,flgs,bufr,pos);
             }
 
-        if(!isFlatSpace(ch))// ch != ' ' && ch != '\t' && ch != 0xA0)
+        if(!isFlatSpace(ch))
             {
             notstartofline = true;
             SegmentEndIndication = checkWhetherCharIsPunctuation(ch);

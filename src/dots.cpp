@@ -31,6 +31,9 @@ void dots::Put3(STROEM * file,wint_t ch,flags & flgs) // called from PutN, Put2 
     /* Put3 generally causes a newline (ch=='\n') to be written.
     Exception: inside htmltags.
     */
+//    if (ch == '\f')
+  //      printf("Put3 \\f\n");
+
 
     if(flgs.inhtmltag)
         {
@@ -53,7 +56,7 @@ void dots::Put3(STROEM * file,wint_t ch,flags & flgs) // called from PutN, Put2 
                     }
                 else 
                     {
-                    if(isFlatSpace(last))// last == '\t' || last == ' ' ||  last == 0xA0 || last == 0x3000)
+                    if(isFlatSpace(last))
                         {
                         pRegularizationFnc(file,' ',flgs);
                         }
@@ -64,24 +67,37 @@ void dots::Put3(STROEM * file,wint_t ch,flags & flgs) // called from PutN, Put2 
         }
     else
         {
-        if(isFlatSpace(ch))//20100106 // ch == 0xA0) // 20071112
-            ch = ' ';
+        if (isFlatSpace(ch))
+            {
+            if(ch != '\f')
+                ch = ' ';
+            }
         else if((unsigned int)ch < ' ') // replace tabs by spaces and all other non-white space by an asterisk
             {
-            if(ch != '\n')
+            if (ch != '\n' && ch != '\f')
+                {
                 ch = '*';
+                }
             }
 
         if(ch == ' ')
             {
-            if(last != '\n') // Spaces at the beginning of a line are ignored. Only spaces after words are recorded in 'last'.
+            if(last != '\n' && last != '\f') // Spaces at the beginning of a line are ignored. Only spaces after words are recorded in 'last'.
                 {
-                last = ' ';
+                last = ' '; // In a sequence of '\n', '\f' and ' ', '\f' prevails
                 }
             return;
             }
+        else if (ch == '\f')
+            {
+            if (last != '\f') // Spaces at the beginning of a line are ignored. Only spaces after words are recorded in 'last'.
+                {
+                last = '\f'; // In a sequence of '\n', '\f' and ' ', '\f' prevails
+                }
+//            return;
+            }
 
-        if(ch == '\n')
+        if(ch == '\n' || ch == '\f')
             {
             if(trailingDotFollowingNumber)
                 {
@@ -92,9 +108,9 @@ void dots::Put3(STROEM * file,wint_t ch,flags & flgs) // called from PutN, Put2 
                 flgs.in_abbreviation = false;
                 }
             }
-        else if(isFlatSpace(last))// last == ' ' || last == 0xA0)
+        else if(isFlatSpace(last))
             {
-            wint_t lastToWrite = ' ';
+            wint_t lastToWrite = last;// ' ';
             if(!isLower(ch)) // Might be an indication that a new sentence starts here. 
                 // Check preceding token for trailing dot that might be a
                 // sentence delimiter after all.
@@ -131,13 +147,17 @@ void dots::Put3(STROEM * file,wint_t ch,flags & flgs) // called from PutN, Put2 
                 pRegularizationFnc(file,'.',flgs);
                 trailingDotFollowingNumber = false;
                 }
-            if((lastToWrite != ' ' && lastToWrite != 0xA0) || flgs.writtentoline)
+
+            if(((lastToWrite != ' ' && lastToWrite != 0xA0) || flgs.writtentoline) && lastToWrite != '\f')
                 pRegularizationFnc(file,lastToWrite,flgs);
-            flgs.writtentoline = (lastToWrite == ' ' || lastToWrite == 0xA0);
+
+            flgs.writtentoline = (lastToWrite == ' ' || lastToWrite == 0xA0 || lastToWrite == '\f');
+
             if(Option.emptyline && flgs.in_abbreviation && !flgs.writtentoline)
                 { // Make sure to send \n next time
                 ensureEmptyLine = true;
                 }
+
             flgs.in_abbreviation = false;
             }
 

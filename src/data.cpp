@@ -192,15 +192,11 @@ bool isSpace(int s)
     {
     bool ret;
     ret = (0 <= s && s < 256 && space[s]) || s == 0x3000;
-    /*if(s > 256 && ret)
-        printf("isSpace(%d)\n",s);*/
     return ret;
     }
 bool isFlatSpace(int s)
     {
     bool ret;
-    ret = (s == '\t' || s == ' ' || s == 0xA0 || s == 0x3000);
-    /*if(s > 256 && ret)
-        printf("isFlatSpace(%d)\n",s);*/
+    ret = (s == '\t' || s == ' ' || s == 0xA0 || s == 0x3000 || s == '\f');
     return ret;
     }

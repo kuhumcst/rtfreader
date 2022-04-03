@@ -79,7 +79,7 @@ ab- ces
     int punkpos = -1;
     bool locAllLower = true;
     bool locAllUpper = true;
-    for(j = 0;j != waited && isFlatSpace(BufferForHandlingEndOfLineHyphens[j]);++j) // '\t' || ' ' || 0xA0 || 0x3000
+    for(j = 0;j != waited && isFlatSpace(BufferForHandlingEndOfLineHyphens[j]);++j)
         BufferForHandlingEndOfLineHyphens[j] = ' ';
     for(;j != waited;++j)
         {
@@ -129,8 +129,8 @@ ab- ces
 
 void paragraph::append(wchar_t ch)
     {
-    assert(Index < -1+sizeof(Line)/sizeof(Line[0]));
-    if (Index < -1 + sizeof(Line) / sizeof(Line[0]))
+    assert(Index + 1 < sizeof(Line)/sizeof(Line[0]));
+    if (Index + 1 < sizeof(Line) / sizeof(Line[0]))
         {
         Line[Index++] = ch;
         Line[Index] = 0;
@@ -407,7 +407,10 @@ void paragraph::PutHandlingLine(wint_t ch,flags & flgs) // Called from GetPut, G
                         {
                         append(MindTheSpace);
                         }
-                    MindTheSpace = ' ';//ch;
+                    if(ch == '\f')
+                        MindTheSpace = ch;
+                    else
+                        MindTheSpace = ' ';
                     }
                 else if(MindTheSpace != 0)
                     {

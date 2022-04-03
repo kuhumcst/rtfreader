@@ -36,9 +36,14 @@ void regularizeWhiteSpace(STROEM * file,wint_t c,flags & flgs) // Called from Pu
     {
     static wint_t previousCharacter = 0;
     static bool previousWasNewLine = false;
-    static bool previousWasFlatSpace = false;
-    if(isFlatSpace(c))// c == ' ' || c == 0xA0)
-        previousWasFlatSpace = true;
+    static wint_t previousWasFlatSpace = 0;
+    //wprintf(L"regularizeWhiteSpace %c\n", c);
+    if (isFlatSpace(c) && c != '\f')
+        {
+        previousWasFlatSpace = (c == '\f') ? '\f' : ' ';
+        //if(c == '\f')
+          //  Fputc(c, file);
+        }
     else
         {
         if(c == '\n')
@@ -78,12 +83,12 @@ void regularizeWhiteSpace(STROEM * file,wint_t c,flags & flgs) // Called from Pu
             previousCharacter = c;
             if(  flgs.writtentoline
               && previousWasFlatSpace
-              )// last == ' ' ||  last == 0xA0)
-                Fputc(' ',file);
+              )
+                Fputc(previousWasFlatSpace,file);
             Fputc(c,file);
             flgs.writtentoline = true;
             }
-        previousWasFlatSpace = false;
+        previousWasFlatSpace = 0;
         }
     }
 
@@ -364,7 +369,7 @@ bool checkSentenceEnd(STROEM * sourceFile,int ch,long & begin_offset,lookahead_f
                     else if(  !ellipsis
                            && !(in_word && isAlpha(next))
                            && !(  in_number 
-                               && (  isFlatSpace(next) // next == ' ' || next == 0xA0
+                               && (  isFlatSpace(next)
                                   || isDigit(next)
                                   )
                                )

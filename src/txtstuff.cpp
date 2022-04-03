@@ -111,18 +111,12 @@ void textSource::doTheSegmentation(charprops CharProps,bool newlineAtEndOffset,b
             oldnl = myoldnl;
         if(oldnl)
             {
-
-
             outputtext->PutHandlingLine(' ',flgs);
             }
 
-
         if(WriteParAfterHeadingOrField)
             {
-
                 {
-
-
                 if(Option.emptyline)
                     {
                     outputtext->PutHandlingLine('\n',flgs);
@@ -685,7 +679,6 @@ bool textSource::segment(int level
                         ,charprops CharProps
                         )
     {
-
     wint_t ch;
     curr_pos = Ftell(sourceFile);// After parsing a html-tag, seeking to curr_pos brings you back to the position where the parsed sequence started.                   
 
@@ -754,6 +747,7 @@ bool textSource::segment(int level
               || flgs.htmltagcoming
               || flgs.inhtmltag
               || (end_offset - begin_offset > MAXSEGMENTLENGTH && isSpace(ch)) // check for buffer overflow
+              || ch == '\f'
               )
                 {
                 doTheSegmentation(CharProps,false,false); 
