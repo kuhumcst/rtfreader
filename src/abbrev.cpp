@@ -47,7 +47,7 @@ bool Abbreviation(const wchar_t * abbr, bool & expectCapitalizedWord)
         if(!strLeftCaseCmp(abbr, abbreviations[f]))
         //if (!strCmp(abbr, abbreviations[f]))
             {
-            wprintf(L"%s ", abbr); printf("%s\n", abbreviations[f]);
+            //wprintf(L"%s ", abbr); printf("%s\n", abbreviations[f]);
             if(Xtra)
                 expectCapitalizedWord = Xtra[f];
             return true;
