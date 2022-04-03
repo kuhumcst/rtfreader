@@ -1,3 +1,11 @@
+Version: 2.10.0 (2022.04.03)
+----------------------------
+Form feed characters are retained in the output.
+In a sequence of white spaces only consisting of any number of space characters
+0x20 and new line characters 0x0A (\n), and one or more form feed characters
+0x0C (\f), only the form feed characters and the first new line character
+prevail. The rest is discarded.
+
 Version: 2.9.1 (2021.09.02)
 ---------------------------
 Fixed: lines with trailing spaces confused the determination whether two
