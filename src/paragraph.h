@@ -82,7 +82,7 @@ class paragraph
         void PutHandlingLine(wint_t ch,flags & flgs); // Called from GetPut, GetPutBullet and doTheSegmentation
         paragraph(STROEM * target):MindTheSpace(0),lastEOLchar(0),last('\n'),
             wait(0),spaceAfterHyphen(false),dropHyphen(false),allLower(false),
-            allUpper(false), lastWordIndex(0), waited(0), Index(0), file(target), Line{ 0 }, BufferForHandlingEndOfLineHyphens{ 0 } {}
+            allUpper(false), lastWordIndex(0), waited(0), Index(0), Line{ 0 }, BufferForHandlingEndOfLineHyphens{ 0 }, file(target) {}
     };
 
 #endif
