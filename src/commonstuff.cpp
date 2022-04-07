@@ -38,11 +38,9 @@ void regularizeWhiteSpace(STROEM * file,wint_t c,flags & flgs) // Called from Pu
     static bool previousWasNewLine = false;
     static wint_t previousWasFlatSpace = 0;
     //wprintf(L"regularizeWhiteSpace %c\n", c);
-    if (isFlatSpace(c) && c != '\f')
+    if (isFlatSpace(c) && c != '\f' && c != '\v')
         {
-        previousWasFlatSpace = (c == '\f') ? '\f' : ' ';
-        //if(c == '\f')
-          //  Fputc(c, file);
+        previousWasFlatSpace = (c == '\f') ? '\f' : (c == '\v') ? '\v' : ' ';
         }
     else
         {

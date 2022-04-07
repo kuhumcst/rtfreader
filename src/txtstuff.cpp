@@ -748,6 +748,7 @@ bool textSource::segment(int level
               || flgs.inhtmltag
               || (end_offset - begin_offset > MAXSEGMENTLENGTH && isSpace(ch)) // check for buffer overflow
               || ch == '\f'
+              || ch == '\v'
               )
                 {
                 doTheSegmentation(CharProps,false,false); 

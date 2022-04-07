@@ -42,6 +42,7 @@ bool isBullet(int ch)
                 && ch != '\v'
                 && ch != '\b'
                 && ch != '\f'
+                && ch != '\v'
                 )
             );
     }

@@ -1,3 +1,11 @@
+Version: 2.10.1 (2022.04.07)
+----------------------------
+Vertical tab characters are retained in the output.
+In a sequence of white spaces only consisting of any number of space characters
+0x20 and new line characters 0x0A (\n), and one or more vertical tab characters
+0x0B (\v), only the vertical tab characters and the first new line character
+prevail. The rest is discarded.
+
 Version: 2.10.0 (2022.04.03)
 ----------------------------
 Form feed characters are retained in the output.

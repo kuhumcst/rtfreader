@@ -408,7 +408,7 @@ void paragraph::PutHandlingLine(wint_t ch,flags & flgs) // Called from GetPut, G
                         {
                         append(MindTheSpace);
                         }
-                    if(ch == '\f')
+                    if(ch == '\f' || ch == '\v')
                         MindTheSpace = ch;
                     else
                         MindTheSpace = ' ';

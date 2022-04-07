@@ -197,6 +197,6 @@ bool isSpace(int s)
 bool isFlatSpace(int s)
     {
     bool ret;
-    ret = (s == '\t' || s == ' ' || s == 0xA0 || s == 0x3000 || s == '\f');
+    ret = (s == '\t' || s == ' ' || s == 0xA0 || s == 0x3000 || s == '\f' || s == '\v');
     return ret;
     }
