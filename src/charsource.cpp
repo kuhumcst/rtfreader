@@ -35,14 +35,13 @@ bool isBullet(int ch)
             || (ch == 0x2022) // unicode BULLET
             || (ch == 0x2023) // unicode triangular bullet
             || (ch == 0x25E6) // unicode white bullet
-            ||  ( (unsigned int )ch < ' '
+            ||  (  (unsigned int )ch < ' '
                 && ch != '\n'
                 && ch != '\r'
                 && ch != '\t'
                 && ch != '\v'
                 && ch != '\b'
                 && ch != '\f'
-                && ch != '\v'
                 )
             );
     }
