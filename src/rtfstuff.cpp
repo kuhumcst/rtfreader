@@ -355,7 +355,41 @@ static CharPropN characterPropertyWithNumericalParameter[] = /* strncmp + number
         ,{NULL,0,0}
     };
 
-char * rtfSource::parseRTFtoken(int level)
+/* From makeUTF8
+* 
+void surrogate(int s, FILE* fo)
+    {
+    static int prev = 0;
+    if (prev == 0)
+        {
+        if ((s & 0xFC00) == 0xD800) // first word surrogate
+            {
+            prev = s;
+            }
+        else
+            {
+            UnicodeToUtf8(s, fo);
+            }
+        }
+    else
+        {
+        if ((s & 0xFC00) == 0xDC00) // second word surrogate
+            {
+            s = (s & 0x3ff) + ((prev & 0x3ff) << 10) + 0x10000;
+            UnicodeToUtf8(s, fo);
+            }
+        else
+            {
+            // Assume it is UCS-2, not UTF-16
+            UnicodeToUtf8(prev, fo);
+            UnicodeToUtf8(s, fo);
+            }
+        prev = 0;
+        }
+    }
+*/
+
+char* rtfSource::parseRTFtoken(int level)
     {
     wint_t ch;
     int position = 0;
@@ -364,9 +398,18 @@ char * rtfSource::parseRTFtoken(int level)
     int shortInt = 0;
     int index = 1;
     static char token[100];
+    static int ucschar = 0;
+    static int prev = 0;
     token[0] = '\\';
-    while((ch = Getc(sourceFile)) != WEOF && ch != 26)
+    while (ucschar || ((ch = Getc(sourceFile)) != WEOF && ch != 26))
         {
+        if (ucschar)
+            {
+            sprintf(token + 1, "u%d", ucschar);
+            ucschar = 0;
+            return token;
+            }
+
 #ifdef LOGGING
         log(level,0,false);
         tentative = ch;
@@ -468,6 +511,8 @@ char * rtfSource::parseRTFtoken(int level)
             case 0xA0:
             case 0x3000:
             case ' ':
+                if (prev) // in the midst of surrogate pair
+                    ;
                 token[--index] = 0;
                 return token;
             case '\n':
@@ -496,13 +541,40 @@ char * rtfSource::parseRTFtoken(int level)
                         if('0' <= ch && ch <= '9')
                             {
                             shortInt = 10 * shortInt + (ch - '0');
-                            if(  ( positive && shortInt > (0xffff / 10))
-                              || (!positive && shortInt > (0x7fff / 10))
-                              )
-                                return token; // Cannot absorb more digits 
-                                // after this one. (I assume that we should
-                                // accept both signed and unsigned short
-                                // integers.)
+                            if ((positive && shortInt > (0xffff / 10))
+                                || (!positive && shortInt > (0x7fff / 10))
+                                )
+                                {
+                                if ((shortInt & 0xFC00) == 0xD800)
+                                    {
+                                    prev = shortInt; // first word surrogate
+                                    return token;
+                                    }
+                                
+                                else if (prev)
+                                    {
+                                    prev = 0;
+                                    if ((shortInt & 0xFC00) == 0xDC00) // second word surrogate
+                                        {
+                                /*        shortInt = (shortInt & 0x3ff) + ((prev & 0x3ff) << 10) + 0x10000;
+                                        sprintf(token + 1, "u%d", shortInt);*/
+                                        return token;
+                                        }
+                                    else
+                                        {
+                                        ucschar = shortInt;
+                                        sprintf(token + 1, "u%d", shortInt); 
+                                        return token;
+                                        }
+                                    }
+                                else
+                                    {
+                                    return token; // Cannot absorb more digits 
+                                    // after this one. (I assume that we should
+                                    // accept both signed and unsigned short
+                                    // integers.)
+                                    }
+                                }
                             }
                         else if(shortInt != 0)    // \u248? The ? must be put back.
                             {
@@ -569,6 +641,11 @@ int rtfSource::TranslateToken(const char * token,int f)
         if((token[1] == '-' || ('0' <= token[1] && token[1] <= '9')))
             {
             int ret = strtol(token+1,NULL,10);
+            /*
+            if ((ret & 0xFC00) == 0xD800)
+                {
+                return 0; // first in surrogate pair. The complete character follows!
+                }*/
             if(ret < 0) //Not necessary, wint_t is unsigned
                 ret += 0x10000;
             staticEat = staticUc;

@@ -235,8 +235,8 @@ static wint_t PutUTF8(wint_t s,FILE * fo )
         {
         if((s & 0xFC00) == 0xDC00) // second word surrogat
             {
-            s = (wint_t)((s & 0x3ff) + ((prev & 0x3ff) << 10) + 0x10000);
-            UnicodeToUtf8(s,fo);
+            int sint = (int)((s & 0x3ff) + ((prev & 0x3ff) << 10) + 0x10000);
+            UnicodeToUtf8(sint,fo);
             }
         else
             {
