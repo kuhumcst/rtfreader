@@ -1,3 +1,10 @@
+Version: 2.11.0 (2022.09.08)
+----------------------------
+Surrogate pairs in RTF input are now also handled correctly if they are
+interspersed by white space characters.
+As in  \u55357 \u56911
+versus \u55357\u56911
+
 Version: 2.10.1 (2022.04.07)
 ----------------------------
 Vertical tab characters are retained in the output.

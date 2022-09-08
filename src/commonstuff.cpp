@@ -37,8 +37,13 @@ void regularizeWhiteSpace(STROEM * file,wint_t c,flags & flgs) // Called from Pu
     static wint_t previousCharacter = 0;
     static bool previousWasNewLine = false;
     static wint_t previousWasFlatSpace = 0;
+    bool inSurrogatePair = ((previousCharacter & 0xFC00) == 0xD800) || ((c & 0xFC00) == 0xD800);
     //wprintf(L"regularizeWhiteSpace %d %c\n",c, c);
-    if (isFlatSpace(c) && c != '\f' && c != '\v')
+    if  (  isFlatSpace(c)
+        && c != '\f' 
+        && c != '\v' 
+        && !inSurrogatePair
+        )
         {
         previousWasFlatSpace = ' ';
         }
@@ -83,7 +88,8 @@ void regularizeWhiteSpace(STROEM * file,wint_t c,flags & flgs) // Called from Pu
               && previousWasFlatSpace
               )
                 Fputc(previousWasFlatSpace,file);
-            Fputc(c,file);
+            if(!isFlatSpace(c) || !inSurrogatePair)
+                Fputc(c,file);
             flgs.writtentoline = true;
             }
         previousWasFlatSpace = 0;
