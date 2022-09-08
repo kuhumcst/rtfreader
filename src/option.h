@@ -68,6 +68,19 @@ struct optionStruct
     bool keepEOLsequence;     // -r              Use same EOL-sequence as input, i.e. if input is DOS, output is DOS, etc.
                               //                 Assume DOS (CR LF \r\n) if no EOL-sequence present in input.
                               // -r-             Use newline (\n) as EOL-sequence (default).
+    /*
+    * TODO
+    int FV;                   // -L<n>           Handling of \f(form feed) and \v(vertical tab):
+                              //                 0: \f and \v are read like \n and will be treated accordingly, not
+                              //                    occurring in the output.
+                              //                 1: \f and \v are understood as token separators (also if preceded
+                              //                    by a hyphen) and kept in the output. Surrounding spaces are suppressed,
+                              //                    but a preceding \n will be used to indicate the end of a sentence/segment.
+                              //                 2: \f and \v are understood as potential token separators in the input
+                              //                    (like \n), but also kept in the output, potentially in the middle of a word.
+                              //                    A preceding space will be used to separate tokens and a preceding \n to
+                              //                    indicate the end of a sentence/segment.
+    */
     bool ParseAsXml;          // processor instruction ends with ?> Otherwise, they end with > (SGML, HTML)
     bool ParseAsHtml;         // script and style elements take CDATA, but only if parseAsXml is false! (So no XHTML)
                               // If parseAsXml is true, parseAsHtml is irrelevant
@@ -139,6 +152,10 @@ aap <?php >? ?> noot .
         ParseAsXml = false;          // processor instruction ends with ?> Otherwise, they end with > (SGML, HTML)
         ParseAsHtml = false;         // script and style elements take CDATA, but only if parseAsXml is false! (So no XHTML)
         encoding = eNoconversion;
+        /*
+        * TODO
+        FV = 0;
+        */
         }
     };
 

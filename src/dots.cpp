@@ -31,6 +31,7 @@ void dots::Put3(STROEM * file,wint_t ch,flags & flgs) // called from PutN, Put2 
     /* Put3 generally causes a newline (ch=='\n') to be written.
     Exception: inside htmltags.
     */
+    //wprintf(L"Put3 %d %c\n", ch, ch);
 
     if(flgs.inhtmltag)
         {
@@ -49,7 +50,6 @@ void dots::Put3(STROEM * file,wint_t ch,flags & flgs) // called from PutN, Put2 
                 if(isSpace(ch))
                     {
                     last = ' ';
-                    //return; // 20100107
                     }
                 else 
                     {
@@ -87,19 +87,14 @@ void dots::Put3(STROEM * file,wint_t ch,flags & flgs) // called from PutN, Put2 
             }
         else if (ch == '\f')
             {
-            if (last != '\f') // Spaces at the beginning of a line are ignored. Only spaces after words are recorded in 'last'.
-                {
-                last = '\f'; // In a sequence of '\n', '\f' and ' ', '\f' prevails
-                }
-//            return;
+            last = '\f'; // In a sequence of '\n', '\f' and ' ', '\f' prevails
             }
         else if (ch == '\v')
             {
-            if (last != '\v') // Spaces at the beginning of a line are ignored. Only spaces after words are recorded in 'last'.
+            if (last != '\f') // Spaces at the beginning of a line are ignored. Only spaces after words are recorded in 'last'.
                 {
                 last = '\v'; // In a sequence of '\n', '\v' and ' ', '\v' prevails
                 }
-            //            return;
             }
 
         if(ch == '\n' || ch == '\f' || ch == '\v')
@@ -187,7 +182,6 @@ void dots::Put3(STROEM * file,wint_t ch,flags & flgs) // called from PutN, Put2 
         }
 
     last = ch;
-    //    flgs.newSegment = false;
     }
 
 void dots::PutN(STROEM * file,wchar_t * buf,size_t len,flags & flgs) // called from Put2

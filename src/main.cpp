@@ -39,7 +39,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include <stdlib.h>
 #include <string.h>
 
-static const char opts[] = "?@:A:a:b:B:D:e:E:hH:i:m:n:p:P:r:s:t:T:vw:x:X:";
+static const char opts[] = "?@:A:a:b:B:D:e:E:hH:i:L:m:n:p:P:r:s:t:T:vw:x:X:";
 
 
 static void doSwitch(int c,char * locoptarg,char * progname,optionStruct & Option)
@@ -105,6 +105,12 @@ static void doSwitch(int c,char * locoptarg,char * progname,optionStruct & Optio
             printf("    -H-             Suppress html-tags from output. (Flat text input only).\n");
             printf("    -HTML           Parse as HTML: <style> and <script> take CDATA, but only if not -XML (default off).\n");
             printf("    -h              Usage.\n");
+            /*
+            * TODO
+            printf("    -L0             \\f and \\v are read like \\n and will be treated accordingly, not occurring in the output.\n");
+            printf("    -L1             \\f and \\v are understood as token separators (also if preceded by a hyphen) and kept in the output. Surrounding spaces are suppressed, but a preceding \\n will be used to indicate the end of a sentence/segment.\n");
+            printf("    -L2:            \\f and \\v are understood as potential token separators in the input (like \\n), but also kept in the output, potentially in the middle of a word. A preceding space will be used to separate tokens and a preceding \\n to indicate the end of a sentence/segment.\n");
+            */
             printf("    -m<mwu>         Text file with multi-word-units\n");
             printf("    -n              Keep noise. (default)\n");
             printf("    -n-             Suppress noise caused by suboptimal ocr.\n");
