@@ -1,5 +1,5 @@
 /*
-CSTRTFREADER - read flat text or rtf and output flat text, 
+CSTRTFREADER - read flat text or rtf and output flat text,
                one line per sentence, optionally tokenised
 
 Copyright (C) 2015  Center for Sprogteknologi, University of Copenhagen
@@ -31,15 +31,15 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include <limits.h>
 #include <stdint.h>
 
-void paragraph::hyphenate(flags & flgs)
+void paragraph::hyphenate(flags& flgs)
     {
-    Segment.Put(file,'-',flgs);
-    Segment.Put(file,'\n',flgs);
-    for(int j = 0;j != waited;++j)
-        Segment.Put(file,BufferForHandlingEndOfLineHyphens[j],flgs);
+    Segment.Put(file, '-', flgs);
+    Segment.Put(file, '\n', flgs);
+    for(int j = 0; j != waited; ++j)
+        Segment.Put(file, BufferForHandlingEndOfLineHyphens[j], flgs);
     }
 
-void paragraph::considerHyphenation(flags & flgs)
+void paragraph::considerHyphenation(flags& flgs)
 /*
 Requires option -w-
 
@@ -80,9 +80,9 @@ ab- ces
     int punkpos = -1;
     bool locAllLower = true;
     bool locAllUpper = true;
-    for(j = 0;j != waited && isFlatSpace(BufferForHandlingEndOfLineHyphens[j]);++j)
+    for(j = 0; j != waited && isFlatSpace(BufferForHandlingEndOfLineHyphens[j]); ++j)
         BufferForHandlingEndOfLineHyphens[j] = ' ';
-    for(;j != waited;++j)
+    for(; j != waited; ++j)
         {
         ++cnt;
         int k = BufferForHandlingEndOfLineHyphens[j];
@@ -120,9 +120,9 @@ ab- ces
     if((!nonAlphaFound && cnt >= 2 && punkpos < 0) || punkpos == cnt)
         {
         if(!dropHyphen || !vowel)
-            Segment.Put(file,'-',flgs);
-        for(j = 0;j != waited;++j)
-            Segment.Put(file,BufferForHandlingEndOfLineHyphens[j],flgs);
+            Segment.Put(file, '-', flgs);
+        for(j = 0; j != waited; ++j)
+            Segment.Put(file, BufferForHandlingEndOfLineHyphens[j], flgs);
         }
     else
         hyphenate(flgs);
@@ -130,8 +130,8 @@ ab- ces
 
 void paragraph::append(wchar_t ch)
     {
-    assert(Index + 1 < sizeof(Line)/sizeof(Line[0]));
-    if (Index + 1 < sizeof(Line) / sizeof(Line[0]))
+    assert(Index + 1 < sizeof(Line) / sizeof(Line[0]));
+    if(Index + 1 < sizeof(Line) / sizeof(Line[0]))
         {
         Line[Index++] = ch;
         Line[Index] = 0;
@@ -140,11 +140,11 @@ void paragraph::append(wchar_t ch)
         ;// We lose characters!
     }
 
-void paragraph::PutHandlingWordWrap(const wint_t ch,flags & flgs) // Called from GetPut, GetPutBullet and doTheSegmentation
+void paragraph::PutHandlingWordWrap(const wint_t ch, flags& flgs) // Called from GetPut, GetPutBullet and doTheSegmentation
     {
     if(flgs.inhtmltag || !Option.wordUnwrap)
         {
-        Segment.Put(file,ch,flgs); // //
+        Segment.Put(file, ch, flgs); // //
         }
     else
         {
@@ -175,7 +175,7 @@ void paragraph::PutHandlingWordWrap(const wint_t ch,flags & flgs) // Called from
                         spaceAfterHyphen = false;
                         }
                     flgs.semiPunctuationFound = 0;
-                    Segment.Put(file,'\n',flgs);
+                    Segment.Put(file, '\n', flgs);
                     break;
                 case '-':
                     {
@@ -185,16 +185,20 @@ void paragraph::PutHandlingWordWrap(const wint_t ch,flags & flgs) // Called from
                     dropHyphen = false;
                     int i;
                     // skip previous spaces
-                    for( i = ind(lastWordIndex-1)
-                       ;    i != lastWordIndex 
-                         && isSpace(BufferForHandlingEndOfLineHyphens[ind(i)])
-                       ; i = dec(i)
-                       )
-                        ;
+                    if(lastWordIndex > 0)
+                        for(i = ind(lastWordIndex - 1)
+                            ;    i != lastWordIndex
+                            && isSpace(BufferForHandlingEndOfLineHyphens[ind(i)])
+                            && i > 0
+                            ; i = dec(i)
+                            )
+                            ;
+                    else
+                        i = 0;
                     allLower = allUpper = true;
-                    bool Upper = false; 
-                    /* This variable introduces "lag" of one iteration in 
-                    changing the value of allLower. In that way, the case of 
+                    bool Upper = false;
+                    /* This variable introduces "lag" of one iteration in
+                    changing the value of allLower. In that way, the case of
                     first character in the string (the one last checked)
                     doesn't matter.
                     Example:
@@ -202,12 +206,12 @@ void paragraph::PutHandlingWordWrap(const wint_t ch,flags & flgs) // Called from
                     vid did it.
                     */
 
-                    for (
-                        ;    i != lastWordIndex 
-                          && ( k = BufferForHandlingEndOfLineHyphens[ind(i)]
-                             , !isSpace(k)
-                             )
-                        ; i = dec(i)
+                    for(
+                        ;    i != lastWordIndex
+                        && (k = BufferForHandlingEndOfLineHyphens[ind(i)]
+                            , !isSpace(k)
+                            )
+                        ;
                         )  // Look at casing of last word in retrograde fashion.
                         {
                         ++nonSpaceCount;
@@ -229,6 +233,10 @@ void paragraph::PutHandlingWordWrap(const wint_t ch,flags & flgs) // Called from
                             //interpretation of hyphen as the 
                             // effect of word wrap.
                             dropHyphen = true;
+                        if(i > 0)
+                            i = dec(i);
+                        else
+                            break;
                         }
                     if(dropHyphen && !allLower && !allUpper)
                         dropHyphen = false; // Mixed case -> keep hyphen
@@ -236,7 +244,7 @@ void paragraph::PutHandlingWordWrap(const wint_t ch,flags & flgs) // Called from
                         {
                         /**/
                         lastWordIndex = 0;
-                        wait = (sizeof(BufferForHandlingEndOfLineHyphens)/sizeof(BufferForHandlingEndOfLineHyphens[0]));
+                        wait = (sizeof(BufferForHandlingEndOfLineHyphens) / sizeof(BufferForHandlingEndOfLineHyphens[0]));
                         waited = 0;
                         }
                     break;
@@ -252,7 +260,7 @@ void paragraph::PutHandlingWordWrap(const wint_t ch,flags & flgs) // Called from
                         flgs.hyphenFound = 0;
                         spaceAfterHyphen = false;
                         }
-                    Segment.Put(file,'\n',flgs); // Treat newline as a blank
+                    Segment.Put(file, '\n', flgs); // Treat newline as a blank
                     }
                 }
             }
@@ -270,7 +278,7 @@ void paragraph::PutHandlingWordWrap(const wint_t ch,flags & flgs) // Called from
                         flgs.semiPunctuationFound = 0;
                         flgs.hyphenFound = 0;
                         spaceAfterHyphen = false;
-                        Segment.Put(file,ch,flgs);
+                        Segment.Put(file, ch, flgs);
                         }
                     else
                         {
@@ -285,13 +293,13 @@ void paragraph::PutHandlingWordWrap(const wint_t ch,flags & flgs) // Called from
                     flgs.semiPunctuationFound = 0;
                     flgs.hyphenFound = 0;
                     spaceAfterHyphen = false;
-                    Segment.Put(file,' ',flgs);
+                    Segment.Put(file, ' ', flgs);
                     }
                 }
             else
                 {
                 if(!flgs.hyphenFound)
-                    Segment.Put(file,ch,flgs);
+                    Segment.Put(file, ch, flgs);
                 }
             }
         }
@@ -306,13 +314,13 @@ void paragraph::PutHandlingWordWrap(const wint_t ch,flags & flgs) // Called from
         if(ch != '\n' && ch != '-' && flgs.hyphenFound && !wait) // A-bomb
             {
             int k;
-            for(k = 0;k < flgs.hyphenFound;++k)
-                Segment.Put(file,'-',flgs);
+            for(k = 0; k < flgs.hyphenFound; ++k)
+                Segment.Put(file, '-', flgs);
             if(spaceAfterHyphen)
-                Segment.Put(file,' ',flgs);
+                Segment.Put(file, ' ', flgs);
             spaceAfterHyphen = false;
             flgs.hyphenFound = 0;
-            Segment.Put(file,ch,flgs);
+            Segment.Put(file, ch, flgs);
             }
         last = ch; ///
         }
@@ -323,9 +331,14 @@ void paragraph::PutHandlingWordWrap(const wint_t ch,flags & flgs) // Called from
 
     if(!wait)
         {
-        if(  !isFlatSpace(ch) 
-          || !isFlatSpace(BufferForHandlingEndOfLineHyphens[ind(lastWordIndex-1)])
-          )
+        if(!isFlatSpace(ch)
+           )
+            {
+            BufferForHandlingEndOfLineHyphens[lastWordIndex] = (wchar_t)ch;
+            lastWordIndex = inc(lastWordIndex);
+            }
+        else if(!isFlatSpace(BufferForHandlingEndOfLineHyphens[ind(lastWordIndex - 1)])
+                )
             {
             BufferForHandlingEndOfLineHyphens[lastWordIndex] = (wchar_t)ch;
             lastWordIndex = inc(lastWordIndex);
@@ -333,46 +346,46 @@ void paragraph::PutHandlingWordWrap(const wint_t ch,flags & flgs) // Called from
         }
     }
 
-void paragraph::flushLine(wint_t ch,flags & flgs)
+void paragraph::flushLine(wint_t ch, flags& flgs)
     {
     size_t lastNonSpace = SIZE_MAX;
     if(Index > 0)
-        for (lastNonSpace = Index - 1; lastNonSpace != 0 && isFlatSpace(Line[lastNonSpace]); --lastNonSpace)
-            {        
+        for(lastNonSpace = Index - 1; lastNonSpace != 0 && isFlatSpace(Line[lastNonSpace]); --lastNonSpace)
+            {
             }
-    if(  flgs.inhtmltag
-      || !Option.suppressNoise 
-      || textBadness(Line,Index) < 0.44
-      )
+    if(flgs.inhtmltag
+       || !Option.suppressNoise
+       || textBadness(Line, Index) < 0.44
+       )
         {
         if(MindTheSpace != 0 /*&& ch != flgs.MindTheSpace*/)
             {
             append(MindTheSpace); // This increments Index
-            if (lastNonSpace > Index) // SIZE_MAX
+            if(lastNonSpace > Index) // SIZE_MAX
                 lastNonSpace = Index - 1;
             MindTheSpace = 0;
             }
         /* Process all characters in Line[] */
-        for(size_t i = 0;i < Index;++i)
+        for(size_t i = 0; i < Index; ++i)
             {
             flgs.nonWhiteSpaceAhead = (i < lastNonSpace);
-            PutHandlingWordWrap(Line[i],flgs);        
+            PutHandlingWordWrap(Line[i], flgs);
             }
-        PutHandlingWordWrap(ch,flgs); // //
+        PutHandlingWordWrap(ch, flgs); // //
         }
     else // skip line, too noisy
         {
-        PutHandlingWordWrap('\n',flgs);        
-        PutHandlingWordWrap(ch,flgs);        
+        PutHandlingWordWrap('\n', flgs);
+        PutHandlingWordWrap(ch, flgs);
         }
     Index = 0;
     }
 
-void paragraph::PutHandlingLine(wint_t ch,flags & flgs) // Called from GetPut, GetPutBullet and doTheSegmentation
+void paragraph::PutHandlingLine(wint_t ch, flags& flgs) // Called from GetPut, GetPutBullet and doTheSegmentation
     {
     if(flgs.inhtmltag)
         {
-        flushLine(ch,flgs);
+        flushLine(ch, flgs);
         }
     else
         {
@@ -380,29 +393,29 @@ void paragraph::PutHandlingLine(wint_t ch,flags & flgs) // Called from GetPut, G
             {
             if(!lastEOLchar || lastEOLchar == ch)
                 {
-                flushLine('\n',flgs);///
+                flushLine('\n', flgs);///
                 lastEOLchar = ch;
                 }
             else
                 {
                 // Ignore ch: CRLF or LFCR sequence equals '\n'
-                lastEOLchar = '\0'; 
+                lastEOLchar = '\0';
                 }
             }
         else
             {
-            if(  ch == WEOF 
-              || ch == 26 /*20150916*/
-              || overflowing()
-              )
+            if(ch == WEOF
+               || ch == 26 /*20150916*/
+               || overflowing()
+               )
                 {
-                flushLine(ch,flgs);
+                flushLine(ch, flgs);
                 }
             else
                 {
                 if(isFlatSpace(ch))
-//                if(ch == ' ' || ch == '\t') // reduces "     \t\t   \t\t\t" to " \t \t"
-                                            // why keep spaces AND tabs, why not reduce to a single space?
+                    //                if(ch == ' ' || ch == '\t') // reduces "     \t\t   \t\t\t" to " \t \t"
+                                                                // why keep spaces AND tabs, why not reduce to a single space?
                     {
                     if(MindTheSpace != 0 /*&& ch != flgs.MindTheSpace*/)
                         {
@@ -430,6 +443,6 @@ void paragraph::PutHandlingLine(wint_t ch,flags & flgs) // Called from GetPut, G
                 //Line[Index++] = ch;
                 }
             }
-        lastEOLchar = '\0'; 
+        lastEOLchar = '\0';
         }
     }

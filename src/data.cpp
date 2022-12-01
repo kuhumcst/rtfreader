@@ -188,13 +188,13 @@ wchar_t const QUANTITY[] = L"$%\x80\x83\x89\xA2\xA3\xA5";//dollar, percent, euro
 wchar_t const RBRACKET[] = L")}]";
 wchar_t const LBRACKET[] = L"({[";
 
-bool isSpace(int s)
+bool isSpace(wint_t s)
     {
     bool ret;
     ret = (0 <= s && s < 256 && space[s]) || s == 0x3000;
     return ret;
     }
-bool isFlatSpace(int s)
+bool isFlatSpace(wint_t s)
     {
     bool ret;
     ret = (s == '\t' || s == ' ' || s == 0xA0 || s == 0x3000 || s == '\f' || s == '\v');

@@ -242,8 +242,8 @@ extern const bool space[256];
 extern const bool vowels[256];
 
 
-extern bool isSpace(int s);
-extern bool isFlatSpace(int s);
+extern bool isSpace(wint_t s);
+extern bool isFlatSpace(wint_t s);
 #define isVowel(s) (0 <= s && s < 256 && vowels[s])
 
 #if COLONISSENTENCEDELIMITER
